@@ -1,3 +1,95 @@
 ################################################################################
 # Never commit compilation (by-)products and machine-specific settings.        #
 ################################################################################
+
+########################
+# ENV / SECRETS
+########################
+.env
+.env.*
+!.env.example
+
+########################
+# NODE (npm / pnpm / yarn)
+########################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist/
+build/
+out/
+coverage/
+
+# Next/Vite/SvelteKit
+.next/
+.nuxt/
+.vite/
+.svelte-kit/
+
+# TypeScript
+*.tsbuildinfo
+
+########################
+# PHP (Composer)
+########################
+vendor/
+composer.phar
+composer.lock
+
+# PHP logs / cache
+*.log
+*.cache
+
+########################
+# Runtime / crawler output
+########################
+data/
+storage/
+crawler-data/
+tmp/
+temp/
+*.sqlite
+*.db
+
+########################
+# Docker
+########################
+docker-compose.override.yml
+
+volumes/
+docker-data/
+
+########################
+# Logs
+########################
+logs/
+*.log
+
+########################
+# IDE / editors
+########################
+.vscode/
+.idea/
+*.swp
+*.swo
+
+########################
+# OS files
+########################
+.DS_Store
+Thumbs.db
+
+########################
+# Testing
+########################
+coverage/
+.phpunit.result.cache
+
+########################
+# Graph / visualization cache
+########################
+graph-cache/
+vis-cache/
