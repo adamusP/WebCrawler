@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Periodicity {
+  MINUTE
+  HOUR
+  DAY
+}
+
+enum ExecutionStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+model WebsiteRecord {
+  id               String      @id @default(cuid())
+  url              String
+  boundaryRegexp   String
+  periodicity      Periodicity
+  label            String
+  active           Boolean     @default(true)
+  tags             String[]
+  lastCrawledAt    DateTime?
+  lastStatus       ExecutionStatus?
+  executions       Execution[]
+  crawledPages     CrawledPage[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model Execution {
+  id              String          @id @default(cuid())
+  websiteRecordId String
+  websiteRecord   WebsiteRecord   @relation(fields: [websiteRecordId], references: [id], onDelete: Cascade)
+  status          ExecutionStatus @default(QUEUED)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  pagesCrawled    Int             @default(0)
+  createdAt       DateTime        @default(now())
+}
+
+model CrawledPage {
+  id              String        @id @default(cuid())
+  websiteRecordId String
+  websiteRecord   WebsiteRecord @relation(fields: [websiteRecordId], references: [id], onDelete: Cascade)
+  url             String
+  title           String?
+  crawlTime       DateTime
+  links           String[]
+
+  @@unique([websiteRecordId, url])
+}

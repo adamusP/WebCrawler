@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-webcrawler}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-webcrawler}
+      POSTGRES_DB: ${POSTGRES_DB:-webcrawler}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://webcrawler:webcrawler@postgres:5432/webcrawler?schema=public}
+      PORT: ${BACKEND_PORT:-3000}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      - postgres
+
+  crawler:
+    build: ./crawler
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://webcrawler:webcrawler@postgres:5432/webcrawler?schema=public}
+      PORT: ${CRAWLER_PORT:-3001}
+    ports:
+      - "${CRAWLER_PORT:-3001}:3001"
+    depends_on:
+      - postgres
+
+  graphql:
+    build: ./graphql
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://webcrawler:webcrawler@postgres:5432/webcrawler?schema=public}
+      PORT: ${GRAPHQL_PORT:-4000}
+    ports:
+      - "${GRAPHQL_PORT:-4000}:4000"
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+      VITE_GRAPHQL_URL: ${VITE_GRAPHQL_URL:-http://localhost:4000/graphql}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+      - graphql
+
+volumes:
+  postgres-data:
