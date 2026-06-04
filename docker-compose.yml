@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-webcrawler}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-webcrawler}
@@ -8,7 +8,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres18-data:/var/lib/postgresql
 
   backend:
     build: ./backend
@@ -52,4 +52,4 @@ services:
       - graphql
 
 volumes:
-  postgres-data:
+  postgres18-data:

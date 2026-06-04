@@ -4,11 +4,11 @@ WebCrawler semestral project.
 
 ## Structure
 
-- `backend` - TypeScript, Node.js, Express, Prisma, Swagger/OpenAPI.
+- `backend` - TypeScript, Node.js, Express 5, Prisma 7.8, Swagger/OpenAPI.
 - `frontend` - React, TypeScript, Vite, Cytoscape.js-ready UI shell.
 - `crawler` - TypeScript crawler service with Cheerio parsing helper.
 - `graphql` - Apollo Server with the required GraphQL schema shape.
-- `docker-compose.yml` - PostgreSQL plus all application services.
+- `docker-compose.yml` - PostgreSQL 18 plus all application services.
 
 Copy `.env.example` to `.env` before customizing local ports or database credentials.
 
