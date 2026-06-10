@@ -1,5 +1,5 @@
 import express from "express";
-import { parseLinks } from "./parseLinks.js";
+import { enqueueUrlForCrawling } from "./crawler.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -11,17 +11,18 @@ app.get("/health", (_req, res) => {
 });
 
 app.post("/crawl", (req, res) => {
-  res.status(501).json({
-    message: "Crawler execution skeleton",
-    requestedUrl: req.body?.url ?? null
+  if (!req.body?.url) {
+    return res.status(400).json({ error: "Missing 'url' in request body" });
+  }
+
+  if (!enqueueUrlForCrawling(req.body.url)) {
+    return res.status(500).json({ error: "Failed to enqueue URL for crawling" });
+  }
+
+  res.status(202).json({
+    message: "URL enqueued for crawling",
+    requestedUrl: req.body?.url,
   });
-});
-
-app.post("/parse-links", (req, res) => {
-  const html = String(req.body?.html ?? "");
-  const baseUrl = String(req.body?.baseUrl ?? "http://localhost");
-
-  res.json({ links: parseLinks(html, baseUrl) });
 });
 
 app.listen(port, () => {

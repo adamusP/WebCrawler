@@ -11,7 +11,11 @@ export function parseLinks(html: string, baseUrl: string): string[] {
     }
 
     try {
-      links.add(new URL(href, baseUrl).toString());
+      const url = new URL(href, baseUrl);
+      // Only consider HTTP and HTTPS links.
+      if (!["http:", "https:"].includes(url.protocol)) return;
+
+      links.add(url.toString());
     } catch {
       // Ignore invalid href values during parsing.
     }
