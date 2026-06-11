@@ -1,4 +1,3 @@
-import { Worker } from "bullmq";
 import { parseLinks } from "./parseLinks.js";
 import { CrawlJobData } from "./crawlJobData.js";
 
