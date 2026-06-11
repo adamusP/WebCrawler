@@ -34,6 +34,8 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://webcrawler:webcrawler@postgres:5432/webcrawler?schema=public}
       PORT: ${CRAWLER_PORT:-3001}
+      WORKER_COUNT: ${CRAWLER_WORKER_COUNT:-4}
+      CONCURRENCY_PER_WORKER: ${CRAWLER_CONCURRENCY_PER_WORKER:-8}
     ports:
       - "${CRAWLER_PORT:-3001}:3001"
     depends_on:

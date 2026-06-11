@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { openApiDocument } from "./swagger.js";
+import { enqueueUrlForCrawling } from "./enqueueCrawl.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -31,6 +32,21 @@ app.post("/api/websites/:id/executions", (req, res) => {
   res.status(501).json({
     message: "Manual execution endpoint skeleton",
     websiteRecordId: req.params.id
+  });
+});
+
+app.post("/crawl", (req, res) => {
+  if (!req.body?.url) {
+    return res.status(400).json({ error: "Missing 'url' in request body" });
+  }
+
+  if (!enqueueUrlForCrawling(req.body.url, "")) {
+    return res.status(500).json({ error: "Failed to enqueue URL for crawling" });
+  }
+
+  res.status(202).json({
+    message: "URL enqueued for crawling",
+    requestedUrl: req.body?.url,
   });
 });
 
