@@ -5,10 +5,8 @@ const crawlQueue = new Queue("crawl", {
   connection: { host: "redis", port: 6379 },
 });
 
-export async function enqueueUrlForCrawling(url: string, regex: string): Promise<boolean> {
-  const jobData: CrawlJobData = { url, regex };
-
-  await crawlQueue.add("crawl-url", jobData);
+export async function enqueueUrlForCrawling(crawlJobData: CrawlJobData): Promise<boolean> {
+  await crawlQueue.add("crawl-url", crawlJobData);
 
   return true;
 }

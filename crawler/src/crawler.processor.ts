@@ -1,7 +1,9 @@
+import type { Job } from "bullmq";
 import { parseLinks } from "./parseLinks.js";
 import { CrawlJobData } from "./crawlJobData.js";
+import { enqueueUrlForCrawling } from "./enqueueCrawl.js";
 
-export default async function crawlUrl(job: { data: CrawlJobData }): Promise<void> {
+export default async function crawlUrl(job: Job<CrawlJobData>): Promise<void> {
   const { url, regex } = job.data;
 
   try {
@@ -16,6 +18,7 @@ export default async function crawlUrl(job: { data: CrawlJobData }): Promise<voi
     const links = parseLinks(html, baseUrl);
 
     console.log(`Crawled ${url} and found links:`, links);
+    await Promise.all(links.map((link) => enqueueUrlForCrawling({ url: link, regex })));
   } catch (error) {
     console.error(`Error crawling ${url}:`, error);
   }

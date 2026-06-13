@@ -1,11 +1,15 @@
 import cors from "cors";
 import express from "express";
+import type { Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { openApiDocument } from "./swagger.js";
 import { closeCrawlQueue, enqueueUrlForCrawling } from "./enqueueCrawl.js";
+import { CrawlJobData } from "./crawlJobData.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
+
+type CrawlRequestBody = Pick<CrawlJobData, "url"> & Partial<Pick<CrawlJobData, "regex">>;
 
 app.use(cors());
 app.use(express.json());
@@ -35,12 +39,17 @@ app.post("/api/websites/:id/executions", (req, res) => {
   });
 });
 
-app.post("/crawl", (req, res) => {
-  if (!req.body?.url) {
+app.post("/crawl", (req: Request<{}, {}, CrawlRequestBody>, res: Response) => {
+  if (!req.body.url) {
     return res.status(400).json({ error: "Missing 'url' in request body" });
   }
 
-  if (!enqueueUrlForCrawling(req.body.url, "")) {
+  const crawlJobData: CrawlJobData = {
+    url: req.body.url,
+    regex: req.body.regex ?? "",
+  };
+
+  if (!enqueueUrlForCrawling(crawlJobData)) {
     return res.status(500).json({ error: "Failed to enqueue URL for crawling" });
   }
 
