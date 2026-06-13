@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { openApiDocument } from "./swagger.js";
-import { enqueueUrlForCrawling } from "./enqueueCrawl.js";
+import { closeCrawlQueue, enqueueUrlForCrawling } from "./enqueueCrawl.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -50,6 +50,47 @@ app.post("/crawl", (req, res) => {
   });
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Backend API listening on port ${port}`);
+});
+
+let shuttingDown = false;
+
+async function shutdown(signal: NodeJS.Signals): Promise<void> {
+  if (shuttingDown) {
+    return;
+  }
+
+  shuttingDown = true;
+  console.log(`Received ${signal}, shutting down backend`);
+
+  try {
+    await Promise.all([
+      new Promise<void>((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve();
+        });
+      }),
+      closeCrawlQueue(),
+    ]);
+
+    console.log("Backend shutdown complete");
+    process.exit(0);
+  } catch (error) {
+    console.error("Backend shutdown failed", error);
+    process.exit(1);
+  }
+}
+
+process.once("SIGTERM", () => {
+  void shutdown("SIGTERM");
+});
+
+process.once("SIGINT", () => {
+  void shutdown("SIGINT");
 });
