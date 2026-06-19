@@ -1,5 +1,6 @@
 import express from "express";
 import { startCrawlerWorkers } from "./crawler.start.js";
+import { closeDatabase } from "./database.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -55,6 +56,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
           resolve();
         });
       }),
+      closeDatabase(),
       ...workerShutdowns,
     ]);
 
@@ -73,4 +75,3 @@ process.once("SIGTERM", () => {
 process.once("SIGINT", () => {
   void shutdown("SIGINT");
 });
-

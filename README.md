@@ -6,9 +6,9 @@ WebCrawler semestral project.
 
 - `backend` - TypeScript, Node.js, Express 5, Prisma 7.8, Swagger/OpenAPI.
 - `frontend` - React, TypeScript, Vite, Cytoscape.js-ready UI shell.
-- `crawler` - TypeScript crawler service with Cheerio parsing helper.
+- `crawler` - TypeScript crawler service with BullMQ workers and Cheerio parsing.
 - `graphql` - Apollo Server with the required GraphQL schema shape.
-- `docker-compose.yml` - PostgreSQL 18 plus all application services.
+- `docker-compose.yml` - PostgreSQL 18, Redis, and all application services.
 
 Copy `.env.example` to `.env` before customizing local ports or database credentials.
 
@@ -21,9 +21,18 @@ Copy-Item .env.example .env
 docker compose up
 ```
 
+The backend applies Prisma migrations on container startup.
+
 If dependencies or Dockerfiles changed, rebuild the images:
 
 ```powershell
+docker compose up --build
+```
+
+For a clean local database and queue, remove volumes before starting:
+
+```powershell
+docker compose down -v
 docker compose up --build
 ```
 
@@ -40,8 +49,31 @@ Useful development URLs:
 - Crawler health: `http://localhost:3001/health`
 - GraphQL: `http://localhost:4000`
 
-Stop the project with:
+## Current API
+
+Implemented backend endpoints:
+
+- `GET /api/websites`
+- `POST /api/websites`
+- `GET /api/websites/:id`
+- `PATCH /api/websites/:id`
+- `DELETE /api/websites/:id`
+- `GET /api/executions`
+- `GET /api/websites/:id/executions`
+- `POST /api/websites/:id/executions`
+
+Manual execution flow:
 
 ```powershell
-docker compose down
+$site = Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:3000/api/websites `
+  -ContentType "application/json" `
+  -Body '{"url":"https://example.com","boundaryRegexp":"^https://example.com/$","periodicity":"HOUR","label":"Example","active":true,"tags":["test"]}'
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:3000/api/websites/$($site.id)/executions"
 ```
+
+Crawler results are stored in PostgreSQL as `CrawledPage`, `CrawledLink`, and `CrawlUrl` records.

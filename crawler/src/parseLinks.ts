@@ -23,3 +23,10 @@ export function parseLinks(html: string, baseUrl: string): string[] {
 
   return [...links];
 }
+
+export function parseTitle(html: string): string | null {
+  const $ = cheerio.load(html);
+  const title = $("title").first().text().trim();
+
+  return title.length > 0 ? title : null;
+}

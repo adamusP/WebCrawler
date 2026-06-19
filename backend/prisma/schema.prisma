@@ -20,6 +20,14 @@ enum ExecutionStatus {
   FAILED
 }
 
+enum CrawlUrlStatus {
+  QUEUED
+  RUNNING
+  CRAWLED
+  FAILED
+  SKIPPED
+}
+
 model WebsiteRecord {
   id               String      @id @default(cuid())
   url              String
@@ -32,6 +40,8 @@ model WebsiteRecord {
   lastStatus       ExecutionStatus?
   executions       Execution[]
   crawledPages     CrawledPage[]
+  crawledLinks     CrawledLink[]
+  crawlUrls        CrawlUrl[]
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 }
@@ -44,17 +54,52 @@ model Execution {
   startedAt       DateTime?
   endedAt         DateTime?
   pagesCrawled    Int             @default(0)
+  crawledPages    CrawledPage[]
+  crawledLinks    CrawledLink[]
+  crawlUrls       CrawlUrl[]
   createdAt       DateTime        @default(now())
+}
+
+model CrawlUrl {
+  id              String         @id @default(cuid())
+  executionId     String
+  execution       Execution      @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  websiteRecordId String
+  websiteRecord   WebsiteRecord  @relation(fields: [websiteRecordId], references: [id], onDelete: Cascade)
+  url             String
+  status          CrawlUrlStatus @default(QUEUED)
+  createdAt       DateTime       @default(now())
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  error           String?
+
+  @@unique([executionId, url])
 }
 
 model CrawledPage {
   id              String        @id @default(cuid())
+  executionId     String
+  execution       Execution     @relation(fields: [executionId], references: [id], onDelete: Cascade)
   websiteRecordId String
   websiteRecord   WebsiteRecord @relation(fields: [websiteRecordId], references: [id], onDelete: Cascade)
   url             String
   title           String?
   crawlTime       DateTime
-  links           String[]
 
-  @@unique([websiteRecordId, url])
+  @@unique([executionId, url])
+}
+
+model CrawledLink {
+  id              String        @id @default(cuid())
+  executionId     String
+  execution       Execution     @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  websiteRecordId String
+  websiteRecord   WebsiteRecord @relation(fields: [websiteRecordId], references: [id], onDelete: Cascade)
+  fromUrl         String
+  toUrl           String
+  matchesBoundary Boolean
+  wasCrawled      Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  @@unique([executionId, fromUrl, toUrl])
 }
