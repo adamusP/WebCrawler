@@ -14,6 +14,7 @@ import {
   getWebsiteRecord,
   listExecutions,
   listWebsiteRecords,
+  listWebsitesPaginated,
   normalizePeriodicity,
   Periodicity,
   updateWebsiteRecord,
@@ -111,6 +112,30 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 app.get("/api/websites", async (_req, res) => {
   res.json(await listWebsiteRecords());
 });
+
+app.get("/api/websites2", async (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  const data = await listWebsitesPaginated({
+    url: typeof req.query.url === "string" ? req.query.url : undefined,
+    label: typeof req.query.label === "string" ? req.query.label : undefined,
+    tags:
+      typeof req.query.tags === "string"
+        ? req.query.tags.split(",")
+        : undefined,
+    sortBy:
+      req.query.sortBy === "lastCrawledAt" ? "lastCrawledAt" : "url",
+    sortOrder:
+      req.query.sortOrder === "desc" ? "desc" : "asc",
+    limit,
+    offset,
+  });
+
+  res.json(data);
+});
+
 
 app.post("/api/websites", async (req: Request<{}, {}, WebsiteRecordRequestBody>, res) => {
   const { errors, parsed } = parseWebsiteRecordBody(req.body);

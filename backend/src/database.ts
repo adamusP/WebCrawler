@@ -133,6 +133,93 @@ export async function listWebsiteRecords(): Promise<WebsiteRecord[]> {
   return result.rows.map(mapWebsiteRecord);
 }
 
+
+export async function listWebsitesPaginated({
+  url,
+  label,
+  tags,
+  sortBy = "url",
+  sortOrder = "asc",
+  limit = 10,
+  offset = 0,
+}: {
+  url?: string;
+  label?: string;
+  tags?: string[];
+  sortBy?: "url" | "lastCrawledAt";
+  sortOrder?: "asc" | "desc";
+  limit?: number;
+  offset?: number;
+}) {
+  const conditions: string[] = [];
+  const params: any[] = [];
+  let i = 1;
+
+  if (url) {
+    conditions.push(`w."url" ILIKE $${i++}`);
+    params.push(`%${url}%`);
+  }
+
+  if (label) {
+    conditions.push(`w."label" ILIKE $${i++}`);
+    params.push(`%${label}%`);
+  }
+
+  if (tags && tags.length > 0) {
+    conditions.push(`w."tags" && $${i++}`);
+    params.push(tags);
+  }
+
+  const whereClause = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
+
+  const orderField =
+    sortBy === "lastCrawledAt"
+      ? `e."startedAt"`
+      : `w."url"`;
+
+  const result = await pool.query(
+    `
+    SELECT
+      w."id",
+      w."url",
+      w."boundaryRegexp",
+      w."periodicity",
+      w."label",
+      w."active",
+      w."tags",
+      w."lastCrawledAt",
+      w."lastStatus",
+      w."createdAt",
+      w."updatedAt",
+      e."startedAt" AS "e.lastCrawledAt",
+      e."status" AS "e.lastStatus"
+
+    FROM "WebsiteRecord" w
+
+    LEFT JOIN LATERAL (
+      SELECT *
+      FROM "Execution" e
+      WHERE e."websiteRecordId" = w."id" AND e."status" IN ('RUNNING', 'SUCCEEDED', 'FAILED')
+      ORDER BY e."startedAt" DESC
+      LIMIT 1
+    ) e ON true
+
+    ${whereClause}
+
+    ORDER BY ${orderField} ${sortOrder.toUpperCase()}
+
+    LIMIT $${i++}
+    OFFSET $${i}
+    `,
+    [...params, limit, offset]
+  );
+
+  return result.rows;
+}
+
+
 export async function getWebsiteRecord(id: string): Promise<WebsiteRecord | null> {
   const result = await pool.query(
     `
