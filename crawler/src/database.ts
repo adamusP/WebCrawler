@@ -174,19 +174,30 @@ export async function createExecutionForWebsiteRecordQueued(
 
   const executionId = randomUUID();
   const now = new Date();
-  await pool.query(
-    `
-      INSERT INTO "Execution" (
-        "id",
-        "websiteRecordId",
-        "status",
-        "startedAt",
-        "createdAt"
-      )
-      VALUES ($1, $2, 'QUEUED', $3, $4)
-    `,
-    [executionId, websiteRecordId, null, now]
-  );
+  try {
+    await pool.query(
+      `
+        INSERT INTO "Execution" (
+          "id",
+          "websiteRecordId",
+          "status",
+          "startedAt",
+          "createdAt"
+        )
+        VALUES ($1, $2, 'QUEUED', $3, $4)
+      `,
+      [executionId, websiteRecordId, null, now]
+    );
+  } catch (err: any) {
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to create execution for website record ${websiteRecordId}:`, err);
+      return null;
+    } else {
+      console.error(`Error creating execution for website record ${websiteRecordId}:`, err);
+      throw err;
+    }
+  }
 
   return { executionId, websiteRecord };
 }
