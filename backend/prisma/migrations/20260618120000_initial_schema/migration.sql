@@ -1,4 +1,4 @@
-CREATE TYPE "Periodicity" AS ENUM ('MINUTE', 'HOUR', 'DAY');
+CREATE TYPE "Periodicity" AS ENUM ('MINUTE', 'HOUR', 'DAY', 'NONE');
 
 CREATE TYPE "ExecutionStatus" AS ENUM ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED');
 

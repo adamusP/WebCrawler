@@ -9,6 +9,7 @@ export type ManualCrawlExecutionInput = {
   url: string;
   regex: string;
   label?: string;
+  periodicity?: Periodicity;
 };
 
 export type ManualCrawlExecution = {
@@ -22,7 +23,7 @@ export type ScheduleCrawlUrlInput = {
   url: string;
 };
 
-export type Periodicity = "MINUTE" | "HOUR" | "DAY";
+export type Periodicity = "MINUTE" | "HOUR" | "DAY" | "NONE";
 
 export type WebsiteRecord = {
   id: string;
@@ -60,7 +61,7 @@ export type ExecutionRecord = {
   createdAt: string;
 };
 
-const allowedPeriodicities = new Set<Periodicity>(["MINUTE", "HOUR", "DAY"]);
+const allowedPeriodicities = new Set<Periodicity>(["MINUTE", "HOUR", "DAY", "NONE"]);
 
 function mapWebsiteRecord(row: Record<string, unknown>): WebsiteRecord {
   return {
@@ -302,10 +303,9 @@ export async function createExecutionForWebsiteRecord(
         "id",
         "websiteRecordId",
         "status",
-        "startedAt",
         "createdAt"
       )
-      VALUES ($1, $2, 'RUNNING', $3, $3)
+      VALUES ($1, $2, 'QUEUED', $3)
     `,
     [executionId, websiteRecordId, now]
   );
@@ -319,7 +319,7 @@ export async function createManualCrawlExecution(
   const websiteRecord = await createWebsiteRecord({
     url: input.url,
     boundaryRegexp: input.regex,
-    periodicity: "HOUR",
+    periodicity: input.periodicity ?? "NONE",
     label: input.label ?? input.url,
     active: true,
     tags: [],

@@ -4,7 +4,7 @@ import type { Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { openApiDocument } from "./swagger.js";
 import { closeCrawlQueue, enqueueUrlForCrawling } from "./enqueueCrawl.js";
-import { CrawlJobData } from "./crawlJobData.js";
+import { CrawlJobDataInput } from "./crawlJobData.js";
 import {
   closeDatabase,
   createExecutionForWebsiteRecord,
@@ -15,15 +15,17 @@ import {
   listExecutions,
   listWebsiteRecords,
   normalizePeriodicity,
+  Periodicity,
   updateWebsiteRecord,
 } from "./database.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
-type CrawlRequestBody = Pick<CrawlJobData, "url"> &
-  Partial<Pick<CrawlJobData, "regex" | "websiteRecordId" | "executionId">> & {
+type CrawlRequestBody = Pick<CrawlJobDataInput, "url"> &
+  Partial<Pick<CrawlJobDataInput, "regex" | "websiteRecordId" | "executionId">> & {
     label?: string;
+    periodicity?: string;
   };
 type WebsiteRecordRequestBody = {
   url?: unknown;
@@ -66,7 +68,7 @@ function parseWebsiteRecordBody(body: WebsiteRecordRequestBody, partial = false)
     if (periodicity) {
       parsed.periodicity = periodicity;
     } else {
-      errors.push("periodicity must be one of MINUTE, HOUR, DAY");
+      errors.push("periodicity must be one of MINUTE, HOUR, DAY, NONE");
     }
   }
 
@@ -189,14 +191,14 @@ app.post("/api/websites/:id/executions", async (req, res) => {
     return res.status(404).json({ error: "Website record not found" });
   }
 
-  const crawlJobData: CrawlJobData = {
+  const crawlJobDataInput: CrawlJobDataInput = {
     url: execution.websiteRecord.url,
     regex: execution.websiteRecord.boundaryRegexp,
     websiteRecordId: execution.websiteRecord.id,
     executionId: execution.executionId,
   };
 
-  await enqueueUrlForCrawling(crawlJobData);
+  await enqueueUrlForCrawling(crawlJobDataInput, execution.websiteRecord.periodicity);
 
   res.status(202).json({
     message: "Execution started",
@@ -209,6 +211,7 @@ app.post("/crawl", async (req: Request<{}, {}, CrawlRequestBody>, res: Response)
   if (!req.body.url) {
     return res.status(400).json({ error: "Missing 'url' in request body" });
   }
+  console.log("Received crawl request:", req.body);
 
   const regex = req.body.regex ?? "";
   const existingIds =
@@ -218,22 +221,24 @@ app.post("/crawl", async (req: Request<{}, {}, CrawlRequestBody>, res: Response)
           executionId: req.body.executionId,
         }
       : null;
+  const periodicity = normalizePeriodicity(req.body.periodicity) ?? "NONE";
   const ids =
     existingIds ??
     (await createManualCrawlExecution({
       url: req.body.url,
       regex,
       label: req.body.label,
+      periodicity: periodicity
     }));
 
-  const crawlJobData: CrawlJobData = {
+  const crawlJobDataInput: CrawlJobDataInput = {
     url: req.body.url,
     regex,
     websiteRecordId: ids.websiteRecordId,
     executionId: ids.executionId,
   };
 
-  if (!enqueueUrlForCrawling(crawlJobData)) {
+  if (!enqueueUrlForCrawling(crawlJobDataInput, periodicity)) {
     return res.status(500).json({ error: "Failed to enqueue URL for crawling" });
   }
 

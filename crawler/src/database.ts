@@ -54,10 +54,13 @@ export async function scheduleCrawlUrl(input: ScheduleCrawlUrlInput): Promise<bo
     )
   );
 
+  console.log(`Scheduled crawl URL: ${input.executionId}:${input.url}, wasScheduled: ${result.rowCount === 1}`);
+
   return result.rowCount === 1;
 }
 
 export async function markCrawlUrlRunning(executionId: string, url: string): Promise<void> {
+  console.debug(`Marking crawl URL as running: ${executionId}:${url}`);
   await retryDeadlocks(() =>
     pool.query(
       `
@@ -69,6 +72,22 @@ export async function markCrawlUrlRunning(executionId: string, url: string): Pro
         WHERE "executionId" = $1 AND "url" = $2
       `,
       [executionId, url]
+    ).then(() => undefined)
+  );
+}
+
+export async function markExecutionRunning(executionId: string): Promise<void> {
+  console.debug(`Marking Execution as running: ${executionId}`);
+  await retryDeadlocks(() =>
+    pool.query(
+      `
+        UPDATE "Execution"
+        SET
+          "status" = $2,
+          "startedAt" = COALESCE("startedAt", CURRENT_TIMESTAMP)
+        WHERE "id" = $1 AND "status" = 'QUEUED'
+      `,
+      [executionId, "RUNNING"]
     ).then(() => undefined)
   );
 }
@@ -87,6 +106,89 @@ export async function finishCrawlUrl(input: FinishCrawlUrlInput): Promise<void> 
       [input.executionId, input.url, input.status, input.error ?? null]
     ).then(() => undefined)
   );
+}
+
+export type Periodicity = "MINUTE" | "HOUR" | "DAY" | "NONE";
+
+export type WebsiteRecord = {
+  id: string;
+  url: string;
+  boundaryRegexp: string;
+  periodicity: Periodicity;
+  label: string;
+  active: boolean;
+  tags: string[];
+  lastCrawledAt: string | null;
+  lastStatus: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function mapWebsiteRecord(row: Record<string, unknown>): WebsiteRecord {
+  return {
+    id: String(row.id),
+    url: String(row.url),
+    boundaryRegexp: String(row.boundaryRegexp),
+    periodicity: row.periodicity as Periodicity,
+    label: String(row.label),
+    active: Boolean(row.active),
+    tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
+    lastCrawledAt: row.lastCrawledAt ? new Date(row.lastCrawledAt as string).toISOString() : null,
+    lastStatus: row.lastStatus ? String(row.lastStatus) : null,
+    createdAt: new Date(row.createdAt as string).toISOString(),
+    updatedAt: new Date(row.updatedAt as string).toISOString(),
+  };
+}
+
+export async function getWebsiteRecord(id: string): Promise<WebsiteRecord | null> {
+  const result = await pool.query(
+    `
+      SELECT
+        "id",
+        "url",
+        "boundaryRegexp",
+        "periodicity",
+        "label",
+        "active",
+        "tags",
+        "lastCrawledAt",
+        "lastStatus",
+        "createdAt",
+        "updatedAt"
+      FROM "WebsiteRecord"
+      WHERE "id" = $1
+    `,
+    [id]
+  );
+
+  return result.rows[0] ? mapWebsiteRecord(result.rows[0]) : null;
+}
+
+export async function createExecutionForWebsiteRecordQueued(
+  websiteRecordId: string
+): Promise<{ executionId: string; websiteRecord: WebsiteRecord } | null> {
+  const websiteRecord = await getWebsiteRecord(websiteRecordId);
+  if (!websiteRecord) {
+    return null;
+  }
+
+  const executionId = randomUUID();
+  const now = new Date();
+  await pool.query(
+    `
+      INSERT INTO "Execution" (
+        "id",
+        "websiteRecordId",
+        "status",
+        "startedAt",
+        "createdAt"
+      )
+      VALUES ($1, $2, 'QUEUED', $3, $4)
+    `,
+    [executionId, websiteRecordId, null, now]
+  );
+
+  return { executionId, websiteRecord };
 }
 
 export async function completeExecutionIfIdle(executionId: string): Promise<boolean> {

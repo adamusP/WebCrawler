@@ -11,6 +11,7 @@ enum Periodicity {
   MINUTE
   HOUR
   DAY
+  NONE
 }
 
 enum ExecutionStatus {
