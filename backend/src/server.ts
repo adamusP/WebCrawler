@@ -13,6 +13,7 @@ import {
   deleteWebsiteRecord,
   getWebsiteRecord,
   listExecutions,
+  listExecutionsPaginated,
   listWebsiteRecords,
   listWebsitesPaginated,
   normalizePeriodicity,
@@ -201,6 +202,23 @@ app.get("/api/executions", async (req, res) => {
   res.json(await listExecutions(websiteRecordId));
 });
 
+app.get("/api/executions2", async (req, res) => {
+  const websiteRecordId =
+    typeof req.query.websiteRecordId === "string" ? req.query.websiteRecordId : undefined;
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  const executions = await listExecutionsPaginated({
+    websiteRecordId: websiteRecordId,
+    limit,
+    offset,
+  });
+
+  res.json(executions);
+});
+
 app.get("/api/websites/:id/executions", async (req, res) => {
   const websiteRecord = await getWebsiteRecord(req.params.id);
   if (!websiteRecord) {
@@ -209,6 +227,26 @@ app.get("/api/websites/:id/executions", async (req, res) => {
 
   res.json(await listExecutions(req.params.id));
 });
+
+app.get("/api/websites/:id/executions2", async (req, res) => {
+  const websiteRecord = await getWebsiteRecord(req.params.id);
+  if (!websiteRecord) {
+    return res.status(404).json({ error: "Website record not found" });
+  }
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  const executions = await listExecutionsPaginated({
+    websiteRecordId: req.params.id,
+    limit,
+    offset,
+  });
+
+  res.json(executions);
+});
+
 
 app.post("/api/websites/:id/executions", async (req, res) => {
   const execution = await createExecutionForWebsiteRecord(req.params.id);

@@ -374,6 +374,42 @@ export async function listExecutions(websiteRecordId?: string): Promise<Executio
   return result.rows.map(mapExecutionRecord);
 }
 
+export async function listExecutionsPaginated({
+  websiteRecordId,
+  limit = 10,
+  offset = 0,
+}: {
+  websiteRecordId?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const result = await pool.query(
+    `
+    SELECT
+      e."id",
+      e."websiteRecordId",
+      w."label" AS "websiteRecordLabel",
+      e."status",
+      e."startedAt",
+      e."endedAt",
+      e."pagesCrawled",
+      e."createdAt"
+    FROM "Execution" e
+    JOIN "WebsiteRecord" w ON w."id" = e."websiteRecordId"
+    ${websiteRecordId ? `WHERE e."websiteRecordId" = $1` : ""}
+    ORDER BY e."createdAt" DESC
+    LIMIT $${websiteRecordId ? 2 : 1}
+    OFFSET $${websiteRecordId ? 3 : 2}
+    `,
+    websiteRecordId
+      ? [websiteRecordId, limit, offset]
+      : [limit, offset]
+  );
+
+  return result.rows;
+}
+
+
 export async function createExecutionForWebsiteRecord(
   websiteRecordId: string
 ): Promise<{ executionId: string; websiteRecord: WebsiteRecord } | null> {
