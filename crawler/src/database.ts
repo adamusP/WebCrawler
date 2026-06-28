@@ -36,76 +36,117 @@ export type FinishCrawlUrlInput = {
 };
 
 export async function scheduleCrawlUrl(input: ScheduleCrawlUrlInput): Promise<boolean> {
-  const result = await retryDeadlocksWithResult(() =>
-    pool.query(
-      `
-        INSERT INTO "CrawlUrl" (
-          "id",
-          "executionId",
-          "websiteRecordId",
-          "url",
-          "status"
-        )
-        VALUES ($1, $2, $3, $4, 'QUEUED')
-        ON CONFLICT ("executionId", "url")
-        DO NOTHING
-      `,
-      [randomUUID(), input.executionId, input.websiteRecordId, input.url]
-    )
-  );
+  try {
+    const result = await retryDeadlocksWithResult(() =>
+      pool.query(
+        `
+          INSERT INTO "CrawlUrl" (
+            "id",
+            "executionId",
+            "websiteRecordId",
+            "url",
+            "status"
+          )
+          VALUES ($1, $2, $3, $4, 'QUEUED')
+          ON CONFLICT ("executionId", "url")
+          DO NOTHING
+        `,
+        [randomUUID(), input.executionId, input.websiteRecordId, input.url]
+      )
+    );
 
-  console.log(`Scheduled crawl URL: ${input.executionId}:${input.url}, wasScheduled: ${result.rowCount === 1}`);
+    console.log(`Scheduled crawl URL: ${input.executionId}:${input.url}, wasScheduled: ${result.rowCount === 1}`);
 
-  return result.rowCount === 1;
+    return result.rowCount === 1;
+  } catch (err: any) {
+      if (err.code === "23503") {
+        // Foreign key violation, the website record might have been deleted
+        console.error(`Failed to schedule crawl URL for website record ${input.websiteRecordId}`);
+        return false;
+      } else {
+        console.error(`Error scheduling crawl URL for website record ${input.websiteRecordId}:`, err);
+        throw err;
+      }
+  }
 }
 
 export async function markCrawlUrlRunning(executionId: string, url: string): Promise<void> {
-  console.debug(`Marking crawl URL as running: ${executionId}:${url}`);
-  await retryDeadlocks(() =>
-    pool.query(
-      `
-        UPDATE "CrawlUrl"
-        SET
-          "status" = 'RUNNING',
-          "startedAt" = COALESCE("startedAt", CURRENT_TIMESTAMP),
-          "error" = NULL
-        WHERE "executionId" = $1 AND "url" = $2
-      `,
-      [executionId, url]
-    ).then(() => undefined)
-  );
+  try {
+    console.debug(`Marking crawl URL as running: ${executionId}:${url}`);
+    await retryDeadlocks(() =>
+      pool.query(
+        `
+          UPDATE "CrawlUrl"
+          SET
+            "status" = 'RUNNING',
+            "startedAt" = COALESCE("startedAt", CURRENT_TIMESTAMP),
+            "error" = NULL
+          WHERE "executionId" = $1 AND "url" = $2
+        `,
+        [executionId, url]
+      ).then(() => undefined)
+    );
+  } catch (err: any) {
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to mark crawl URL as running for executionId ${executionId}`);
+    } else {
+      console.error(`Error marking crawl URL as running for executionId ${executionId}:`, err);
+      throw err;
+    }
+  }
 }
 
 export async function markExecutionRunning(executionId: string): Promise<void> {
-  console.debug(`Marking Execution as running: ${executionId}`);
-  await retryDeadlocks(() =>
-    pool.query(
-      `
-        UPDATE "Execution"
-        SET
-          "status" = $2,
-          "startedAt" = COALESCE("startedAt", CURRENT_TIMESTAMP)
-        WHERE "id" = $1 AND "status" = 'QUEUED'
-      `,
-      [executionId, "RUNNING"]
-    ).then(() => undefined)
-  );
+  try {
+    console.debug(`Marking Execution as running: ${executionId}`);
+    await retryDeadlocks(() =>
+      pool.query(
+        `
+          UPDATE "Execution"
+          SET
+            "status" = $2,
+            "startedAt" = COALESCE("startedAt", CURRENT_TIMESTAMP)
+          WHERE "id" = $1 AND "status" = 'QUEUED'
+        `,
+        [executionId, "RUNNING"]
+      ).then(() => undefined)
+    );
+  } catch (err: any) {
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to mark execution as running for executionId ${executionId}`);
+    } else {
+      console.error(`Error marking execution as running for executionId ${executionId}:`, err);
+      throw err;
+    }
+  }
 }
 
 export async function finishCrawlUrl(input: FinishCrawlUrlInput): Promise<void> {
-  await retryDeadlocks(() =>
-    pool.query(
-      `
-        UPDATE "CrawlUrl"
-        SET
-          "status" = $3,
-          "finishedAt" = CURRENT_TIMESTAMP,
-          "error" = $4
-        WHERE "executionId" = $1 AND "url" = $2
-      `,
-      [input.executionId, input.url, input.status, input.error ?? null]
-    ).then(() => undefined)
-  );
+  try {
+    await retryDeadlocks(() =>
+      pool.query(
+        `
+          UPDATE "CrawlUrl"
+          SET
+            "status" = $3,
+            "finishedAt" = CURRENT_TIMESTAMP,
+            "error" = $4
+          WHERE "executionId" = $1 AND "url" = $2
+        `,
+        [input.executionId, input.url, input.status, input.error ?? null]
+      ).then(() => undefined)
+    );
+  } catch (err: any) {
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to finish crawl URL for executionId ${input.executionId}`);
+    } else {
+      console.error(`Error finishing crawl URL for executionId ${input.executionId}:`, err);
+      throw err;
+    }
+  }
 }
 
 export type Periodicity = "MINUTE" | "HOUR" | "DAY" | "NONE";
@@ -191,7 +232,7 @@ export async function createExecutionForWebsiteRecordQueued(
   } catch (err: any) {
     if (err.code === "23503") {
       // Foreign key violation, the website record might have been deleted
-      console.error(`Failed to create execution for website record ${websiteRecordId}:`, err);
+      console.error(`Failed to create execution for website record ${websiteRecordId}`);
       return null;
     } else {
       console.error(`Error creating execution for website record ${websiteRecordId}:`, err);
@@ -203,78 +244,99 @@ export async function createExecutionForWebsiteRecordQueued(
 }
 
 export async function completeExecutionIfIdle(executionId: string): Promise<boolean> {
-  return retryDeadlocksWithResult(async () => {
-    const activeResult = await pool.query<{ activeCount: string }>(
-      `
-        SELECT COUNT(*) AS "activeCount"
-        FROM "CrawlUrl"
-        WHERE "executionId" = $1 AND "status" IN ('QUEUED', 'RUNNING')
-      `,
-      [executionId]
-    );
+  try {
+    return retryDeadlocksWithResult(async () => {
+      const activeResult = await pool.query<{ activeCount: string }>(
+        `
+          SELECT COUNT(*) AS "activeCount"
+          FROM "CrawlUrl"
+          WHERE "executionId" = $1 AND "status" IN ('QUEUED', 'RUNNING')
+        `,
+        [executionId]
+      );
 
-    const activeCount = Number(activeResult.rows[0]?.activeCount ?? 0);
-    if (activeCount > 0) {
+      const activeCount = Number(activeResult.rows[0]?.activeCount ?? 0);
+      if (activeCount > 0) {
+        return false;
+      }
+
+      const failedResult = await pool.query<{ failedCount: string }>(
+        `
+          SELECT COUNT(*) AS "failedCount"
+          FROM "CrawlUrl"
+          WHERE "executionId" = $1 AND "status" = 'FAILED'
+        `,
+        [executionId]
+      );
+      const pageCountResult = await pool.query<{ pageCount: string }>(
+        `
+          SELECT COUNT(*) AS "pageCount"
+          FROM "CrawledPage"
+          WHERE "executionId" = $1
+        `,
+        [executionId]
+      );
+
+      const failedCount = Number(failedResult.rows[0]?.failedCount ?? 0);
+      const pageCount = Number(pageCountResult.rows[0]?.pageCount ?? 0);
+      const finalStatus = failedCount > 0 ? "FAILED" : "SUCCEEDED";
+
+      await pool.query(
+        `
+          UPDATE "Execution"
+          SET
+            "status" = $2,
+            "endedAt" = COALESCE("endedAt", CURRENT_TIMESTAMP),
+            "pagesCrawled" = $3
+          WHERE "id" = $1 AND "status" = 'RUNNING'
+        `,
+        [executionId, finalStatus, pageCount]
+      );
+
+      await pool.query(
+        `
+          UPDATE "WebsiteRecord"
+          SET
+            "lastCrawledAt" = CURRENT_TIMESTAMP,
+            "lastStatus" = $2,
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = (
+            SELECT "websiteRecordId"
+            FROM "Execution"
+            WHERE "id" = $1
+          )
+        `,
+        [executionId, finalStatus]
+      );
+
+      return true;
+    });
+  } catch (err: any) {
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to complete execution for execution ${executionId}`);
       return false;
+    } else {
+      console.error(`Error completing execution for execution ${executionId}:`, err);
+      throw err;
     }
-
-    const failedResult = await pool.query<{ failedCount: string }>(
-      `
-        SELECT COUNT(*) AS "failedCount"
-        FROM "CrawlUrl"
-        WHERE "executionId" = $1 AND "status" = 'FAILED'
-      `,
-      [executionId]
-    );
-    const pageCountResult = await pool.query<{ pageCount: string }>(
-      `
-        SELECT COUNT(*) AS "pageCount"
-        FROM "CrawledPage"
-        WHERE "executionId" = $1
-      `,
-      [executionId]
-    );
-
-    const failedCount = Number(failedResult.rows[0]?.failedCount ?? 0);
-    const pageCount = Number(pageCountResult.rows[0]?.pageCount ?? 0);
-    const finalStatus = failedCount > 0 ? "FAILED" : "SUCCEEDED";
-
-    await pool.query(
-      `
-        UPDATE "Execution"
-        SET
-          "status" = $2,
-          "endedAt" = COALESCE("endedAt", CURRENT_TIMESTAMP),
-          "pagesCrawled" = $3
-        WHERE "id" = $1 AND "status" = 'RUNNING'
-      `,
-      [executionId, finalStatus, pageCount]
-    );
-
-    await pool.query(
-      `
-        UPDATE "WebsiteRecord"
-        SET
-          "lastCrawledAt" = CURRENT_TIMESTAMP,
-          "lastStatus" = $2,
-          "updatedAt" = CURRENT_TIMESTAMP
-        WHERE "id" = (
-          SELECT "websiteRecordId"
-          FROM "Execution"
-          WHERE "id" = $1
-        )
-      `,
-      [executionId, finalStatus]
-    );
-
-    return true;
-  });
+  }
 }
 
 export async function saveCrawlResult(input: SaveCrawlResultInput): Promise<void> {
-  await retryDeadlocks(() => saveCrawledPage(input));
-  await retryDeadlocks(() => markUrlAsCrawled(input.executionId, input.url));
-  await retryDeadlocks(() => saveCrawledLinks(input));
+  try {
+    await retryDeadlocks(() => saveCrawledPage(input));
+    await retryDeadlocks(() => markUrlAsCrawled(input.executionId, input.url));
+    await retryDeadlocks(() => saveCrawledLinks(input));
+  } catch (err: any) {
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to save crawl result for website record ${input.websiteRecordId}`);
+    } else {
+      console.error(`Error saving crawl result for website record ${input.websiteRecordId}:`, err);
+      throw err;
+    }
+  }
 }
 
 async function saveCrawledPage(input: SaveCrawlResultInput): Promise<void> {
