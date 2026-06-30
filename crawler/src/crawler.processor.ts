@@ -1,4 +1,4 @@
-import type { Job} from "bullmq";
+import type { Job } from "bullmq";
 import { DelayedError } from "bullmq";
 import { parseLinks, parseTitle } from "./parseLinks.js";
 import { CrawlJobData } from "./crawlJobData.js";
@@ -30,7 +30,7 @@ async function tryAcquireDomain(domain: string): Promise<boolean> {
 }
 
 export default async function crawlUrl(job: Job<CrawlJobData>, token?: string): Promise<void> {
-  const { url, regex, websiteRecordId, executionId, nextDelay} = job.data;
+  const { url, regex, websiteRecordId, executionId, nextDelay } = job.data;
   if (!websiteRecordId || !executionId) {
     console.error(`Missing persistence identifiers for crawl job: ${url}`);
     return;
@@ -40,13 +40,16 @@ export default async function crawlUrl(job: Job<CrawlJobData>, token?: string): 
   const currentUrl = urlObj.toString(); // Normalize URL for comparison
   const domain = getDomain(url) ?? urlObj.hostname;
 
-  console.log(`Starting crawl for ${currentUrl} with regex: ${regex}, websiteRecordId: ${websiteRecordId}, executionId: ${executionId}`);
+  console.log(
+    `Starting crawl for ${currentUrl} with regex: ${regex}, websiteRecordId: ${websiteRecordId}, executionId: ${executionId}`
+  );
   if (!(await tryAcquireDomain(domain))) {
-    console.log(`Domain ${domain} is currently locked. Re-enqueueing ${currentUrl} for later crawling.`);
+    console.log(
+      `Domain ${domain} is currently locked. Re-enqueueing ${currentUrl} for later crawling.`
+    );
     await job.moveToDelayed(Date.now() + Math.ceil(BASE_DELAY_MS + Math.random() * 200), token);
     throw new DelayedError();
   }
-
 
   try {
     await markExecutionRunning(executionId);
@@ -85,9 +88,8 @@ export default async function crawlUrl(job: Job<CrawlJobData>, token?: string): 
       return;
     }
 
-    const matchingLinks = (linkPattern
-      ? allLinks.filter((link) => linkPattern.test(link))
-      : allLinks
+    const matchingLinks = (
+      linkPattern ? allLinks.filter((link) => linkPattern.test(link)) : allLinks
     ).filter((link) => link !== currentUrl);
     const matchingLinkSet = new Set(matchingLinks);
 
@@ -127,11 +129,18 @@ export default async function crawlUrl(job: Job<CrawlJobData>, token?: string): 
       console.log(`Re-enqueueing ${websiteRecordId}:${url} for crawling after ${nextDelay} ms`);
       const execution = await createExecutionForWebsiteRecordQueued(websiteRecordId);
       if (!execution) {
-        console.error(`Failed to create scheduled execution for website record: ${websiteRecordId}`);
-        return;
+        console.error(
+          `Failed to create scheduled execution for website record: ${websiteRecordId}`
+        );
+      } else {
+        await scheduleNext({
+          url,
+          regex,
+          websiteRecordId,
+          executionId: execution.executionId,
+          nextDelay,
+        });
       }
-
-      await scheduleNext({ url, regex, websiteRecordId, executionId: execution.executionId, nextDelay });
     }
   }
 }

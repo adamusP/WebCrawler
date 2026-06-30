@@ -12,12 +12,9 @@ import {
   createWebsiteRecord,
   deleteWebsiteRecord,
   getWebsiteRecord,
-  listExecutions,
   listExecutionsPaginated,
-  listWebsiteRecords,
   listWebsitesPaginated,
   normalizePeriodicity,
-  Periodicity,
   updateWebsiteRecord,
 } from "./database.js";
 
@@ -110,11 +107,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
-app.get("/api/websites", async (_req, res) => {
-  res.json(await listWebsiteRecords());
-});
-
-app.get("/api/websites2", async (req, res) => {
+async function listWebsitesHandler(req: Request, res: Response) {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const offset = (page - 1) * limit;
@@ -122,39 +115,38 @@ app.get("/api/websites2", async (req, res) => {
   const data = await listWebsitesPaginated({
     url: typeof req.query.url === "string" ? req.query.url : undefined,
     label: typeof req.query.label === "string" ? req.query.label : undefined,
-    tags:
-      typeof req.query.tags === "string"
-        ? req.query.tags.split(",")
-        : undefined,
-    sortBy:
-      req.query.sortBy === "lastCrawledAt" ? "lastCrawledAt" : "url",
-    sortOrder:
-      req.query.sortOrder === "desc" ? "desc" : "asc",
+    tags: typeof req.query.tags === "string" ? req.query.tags.split(",") : undefined,
+    sortBy: req.query.sortBy === "lastCrawledAt" ? "lastCrawledAt" : "url",
+    sortOrder: req.query.sortOrder === "desc" ? "desc" : "asc",
     limit,
     offset,
   });
 
   res.json(data);
-});
+}
 
+app.get("/api/websites", listWebsitesHandler);
 
-app.post("/api/websites", async (req: Request<{}, {}, WebsiteRecordRequestBody>, res) => {
-  const { errors, parsed } = parseWebsiteRecordBody(req.body);
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
+app.post(
+  "/api/websites",
+  async (req: Request<Record<string, never>, unknown, WebsiteRecordRequestBody>, res) => {
+    const { errors, parsed } = parseWebsiteRecordBody(req.body);
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    const websiteRecord = await createWebsiteRecord({
+      url: parsed.url!,
+      boundaryRegexp: parsed.boundaryRegexp!,
+      periodicity: parsed.periodicity!,
+      label: parsed.label!,
+      active: parsed.active,
+      tags: parsed.tags,
+    });
+
+    res.status(201).json(websiteRecord);
   }
-
-  const websiteRecord = await createWebsiteRecord({
-    url: parsed.url!,
-    boundaryRegexp: parsed.boundaryRegexp!,
-    periodicity: parsed.periodicity!,
-    label: parsed.label!,
-    active: parsed.active,
-    tags: parsed.tags,
-  });
-
-  res.status(201).json(websiteRecord);
-});
+);
 
 app.get("/api/websites/:id", async (req, res) => {
   const websiteRecord = await getWebsiteRecord(req.params.id);
@@ -165,26 +157,29 @@ app.get("/api/websites/:id", async (req, res) => {
   res.json(websiteRecord);
 });
 
-app.patch("/api/websites/:id", async (req: Request<{ id: string }, {}, WebsiteRecordRequestBody>, res) => {
-  const { errors, parsed } = parseWebsiteRecordBody(req.body, true);
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
-  }
+app.patch(
+  "/api/websites/:id",
+  async (req: Request<{ id: string }, unknown, WebsiteRecordRequestBody>, res) => {
+    const { errors, parsed } = parseWebsiteRecordBody(req.body, true);
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
 
-  const websiteRecord = await updateWebsiteRecord(req.params.id, {
-    url: parsed.url,
-    boundaryRegexp: parsed.boundaryRegexp,
-    periodicity: parsed.periodicity ?? undefined,
-    label: parsed.label,
-    active: parsed.active,
-    tags: parsed.tags,
-  });
-  if (!websiteRecord) {
-    return res.status(404).json({ error: "Website record not found" });
-  }
+    const websiteRecord = await updateWebsiteRecord(req.params.id, {
+      url: parsed.url,
+      boundaryRegexp: parsed.boundaryRegexp,
+      periodicity: parsed.periodicity ?? undefined,
+      label: parsed.label,
+      active: parsed.active,
+      tags: parsed.tags,
+    });
+    if (!websiteRecord) {
+      return res.status(404).json({ error: "Website record not found" });
+    }
 
-  res.json(websiteRecord);
-});
+    res.json(websiteRecord);
+  }
+);
 
 app.delete("/api/websites/:id", async (req, res) => {
   const deleted = await deleteWebsiteRecord(req.params.id);
@@ -195,14 +190,7 @@ app.delete("/api/websites/:id", async (req, res) => {
   res.status(204).send();
 });
 
-app.get("/api/executions", async (req, res) => {
-  const websiteRecordId =
-    typeof req.query.websiteRecordId === "string" ? req.query.websiteRecordId : undefined;
-
-  res.json(await listExecutions(websiteRecordId));
-});
-
-app.get("/api/executions2", async (req, res) => {
+async function listExecutionsHandler(req: Request, res: Response) {
   const websiteRecordId =
     typeof req.query.websiteRecordId === "string" ? req.query.websiteRecordId : undefined;
 
@@ -217,18 +205,11 @@ app.get("/api/executions2", async (req, res) => {
   });
 
   res.json(executions);
-});
+}
 
-app.get("/api/websites/:id/executions", async (req, res) => {
-  const websiteRecord = await getWebsiteRecord(req.params.id);
-  if (!websiteRecord) {
-    return res.status(404).json({ error: "Website record not found" });
-  }
+app.get("/api/executions", listExecutionsHandler);
 
-  res.json(await listExecutions(req.params.id));
-});
-
-app.get("/api/websites/:id/executions2", async (req, res) => {
+async function listWebsiteExecutionsHandler(req: Request<{ id: string }>, res: Response) {
   const websiteRecord = await getWebsiteRecord(req.params.id);
   if (!websiteRecord) {
     return res.status(404).json({ error: "Website record not found" });
@@ -245,8 +226,9 @@ app.get("/api/websites/:id/executions2", async (req, res) => {
   });
 
   res.json(executions);
-});
+}
 
+app.get("/api/websites/:id/executions", listWebsiteExecutionsHandler);
 
 app.post("/api/websites/:id/executions", async (req, res) => {
   const execution = await createExecutionForWebsiteRecord(req.params.id);
@@ -270,48 +252,52 @@ app.post("/api/websites/:id/executions", async (req, res) => {
   });
 });
 
-app.post("/crawl", async (req: Request<{}, {}, CrawlRequestBody>, res: Response) => {
-  if (!req.body.url) {
-    return res.status(400).json({ error: "Missing 'url' in request body" });
-  }
-  console.log("Received crawl request:", req.body);
+app.post(
+  "/crawl",
+  async (req: Request<Record<string, never>, unknown, CrawlRequestBody>, res: Response) => {
+    if (!req.body.url) {
+      return res.status(400).json({ error: "Missing 'url' in request body" });
+    }
+    console.log("Received crawl request:", req.body);
 
-  const regex = req.body.regex ?? "";
-  const existingIds =
-    req.body.websiteRecordId && req.body.executionId
-      ? {
-          websiteRecordId: req.body.websiteRecordId,
-          executionId: req.body.executionId,
-        }
-      : null;
-  const periodicity = normalizePeriodicity(req.body.periodicity) ?? "NONE";
-  const ids =
-    existingIds ??
-    (await createManualCrawlExecution({
+    const regex = req.body.regex ?? "";
+    const existingIds =
+      req.body.websiteRecordId && req.body.executionId
+        ? {
+            websiteRecordId: req.body.websiteRecordId,
+            executionId: req.body.executionId,
+          }
+        : null;
+    const periodicity = normalizePeriodicity(req.body.periodicity) ?? "NONE";
+    const ids =
+      existingIds ??
+      (await createManualCrawlExecution({
+        url: req.body.url,
+        regex,
+        label: req.body.label,
+        periodicity: periodicity,
+      }));
+
+    const crawlJobDataInput: CrawlJobDataInput = {
       url: req.body.url,
       regex,
-      label: req.body.label,
-      periodicity: periodicity
-    }));
+      websiteRecordId: ids.websiteRecordId,
+      executionId: ids.executionId,
+    };
 
-  const crawlJobDataInput: CrawlJobDataInput = {
-    url: req.body.url,
-    regex,
-    websiteRecordId: ids.websiteRecordId,
-    executionId: ids.executionId,
-  };
+    const wasEnqueued = await enqueueUrlForCrawling(crawlJobDataInput, periodicity);
+    if (!wasEnqueued) {
+      return res.status(409).json({ error: "URL was already scheduled or could not be queued" });
+    }
 
-  if (!enqueueUrlForCrawling(crawlJobDataInput, periodicity)) {
-    return res.status(500).json({ error: "Failed to enqueue URL for crawling" });
+    res.status(202).json({
+      message: "URL enqueued for crawling",
+      requestedUrl: req.body?.url,
+      websiteRecordId: ids.websiteRecordId,
+      executionId: ids.executionId,
+    });
   }
-
-  res.status(202).json({
-    message: "URL enqueued for crawling",
-    requestedUrl: req.body?.url,
-    websiteRecordId: ids.websiteRecordId,
-    executionId: ids.executionId,
-  });
-});
+);
 
 const server = app.listen(port, () => {
   console.log(`Backend API listening on port ${port}`);

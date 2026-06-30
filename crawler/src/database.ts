@@ -55,18 +55,20 @@ export async function scheduleCrawlUrl(input: ScheduleCrawlUrlInput): Promise<bo
       )
     );
 
-    console.log(`Scheduled crawl URL: ${input.executionId}:${input.url}, wasScheduled: ${result.rowCount === 1}`);
+    console.log(
+      `Scheduled crawl URL: ${input.executionId}:${input.url}, wasScheduled: ${result.rowCount === 1}`
+    );
 
     return result.rowCount === 1;
   } catch (err: any) {
-      if (err.code === "23503") {
-        // Foreign key violation, the website record might have been deleted
-        console.error(`Failed to schedule crawl URL for website record ${input.websiteRecordId}`);
-        return false;
-      } else {
-        console.error(`Error scheduling crawl URL for website record ${input.websiteRecordId}:`, err);
-        throw err;
-      }
+    if (err.code === "23503") {
+      // Foreign key violation, the website record might have been deleted
+      console.error(`Failed to schedule crawl URL for website record ${input.websiteRecordId}`);
+      return false;
+    } else {
+      console.error(`Error scheduling crawl URL for website record ${input.websiteRecordId}:`, err);
+      throw err;
+    }
   }
 }
 
@@ -74,8 +76,9 @@ export async function markCrawlUrlRunning(executionId: string, url: string): Pro
   try {
     console.debug(`Marking crawl URL as running: ${executionId}:${url}`);
     await retryDeadlocks(() =>
-      pool.query(
-        `
+      pool
+        .query(
+          `
           UPDATE "CrawlUrl"
           SET
             "status" = 'RUNNING',
@@ -83,8 +86,9 @@ export async function markCrawlUrlRunning(executionId: string, url: string): Pro
             "error" = NULL
           WHERE "executionId" = $1 AND "url" = $2
         `,
-        [executionId, url]
-      ).then(() => undefined)
+          [executionId, url]
+        )
+        .then(() => undefined)
     );
   } catch (err: any) {
     if (err.code === "23503") {
@@ -101,16 +105,18 @@ export async function markExecutionRunning(executionId: string): Promise<void> {
   try {
     console.debug(`Marking Execution as running: ${executionId}`);
     await retryDeadlocks(() =>
-      pool.query(
-        `
+      pool
+        .query(
+          `
           UPDATE "Execution"
           SET
             "status" = $2,
             "startedAt" = COALESCE("startedAt", CURRENT_TIMESTAMP)
           WHERE "id" = $1 AND "status" = 'QUEUED'
         `,
-        [executionId, "RUNNING"]
-      ).then(() => undefined)
+          [executionId, "RUNNING"]
+        )
+        .then(() => undefined)
     );
   } catch (err: any) {
     if (err.code === "23503") {
@@ -126,8 +132,9 @@ export async function markExecutionRunning(executionId: string): Promise<void> {
 export async function finishCrawlUrl(input: FinishCrawlUrlInput): Promise<void> {
   try {
     await retryDeadlocks(() =>
-      pool.query(
-        `
+      pool
+        .query(
+          `
           UPDATE "CrawlUrl"
           SET
             "status" = $3,
@@ -135,8 +142,9 @@ export async function finishCrawlUrl(input: FinishCrawlUrlInput): Promise<void> 
             "error" = $4
           WHERE "executionId" = $1 AND "url" = $2
         `,
-        [input.executionId, input.url, input.status, input.error ?? null]
-      ).then(() => undefined)
+          [input.executionId, input.url, input.status, input.error ?? null]
+        )
+        .then(() => undefined)
     );
   } catch (err: any) {
     if (err.code === "23503") {
@@ -309,6 +317,40 @@ export async function completeExecutionIfIdle(executionId: string): Promise<bool
         [executionId, finalStatus]
       );
 
+      if (finalStatus === "SUCCEEDED") {
+        await pool.query(
+          `
+            DELETE FROM "CrawledLink"
+            WHERE "executionId" IN (
+              SELECT previous."id"
+              FROM "Execution" current
+              JOIN "Execution" previous
+                ON previous."websiteRecordId" = current."websiteRecordId"
+              WHERE current."id" = $1
+                AND previous."id" <> current."id"
+                AND previous."status" IN ('SUCCEEDED', 'FAILED')
+            )
+          `,
+          [executionId]
+        );
+
+        await pool.query(
+          `
+            DELETE FROM "CrawledPage"
+            WHERE "executionId" IN (
+              SELECT previous."id"
+              FROM "Execution" current
+              JOIN "Execution" previous
+                ON previous."websiteRecordId" = current."websiteRecordId"
+              WHERE current."id" = $1
+                AND previous."id" <> current."id"
+                AND previous."status" IN ('SUCCEEDED', 'FAILED')
+            )
+          `,
+          [executionId]
+        );
+      }
+
       return true;
     });
   } catch (err: any) {
@@ -384,9 +426,9 @@ async function saveCrawledLinks(input: SaveCrawlResultInput): Promise<void> {
     return;
   }
 
-  const dedupedLinks = [
-    ...new Map(input.links.map((link) => [link.toUrl, link])).values(),
-  ].sort((left, right) => left.toUrl.localeCompare(right.toUrl));
+  const dedupedLinks = [...new Map(input.links.map((link) => [link.toUrl, link])).values()].sort(
+    (left, right) => left.toUrl.localeCompare(right.toUrl)
+  );
 
   await pool.query(
     `

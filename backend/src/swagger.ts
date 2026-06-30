@@ -86,7 +86,7 @@ export const openApiDocument = {
     schemas: {
       Periodicity: {
         type: "string",
-        enum: ["MINUTE", "HOUR", "DAY"],
+        enum: ["MINUTE", "HOUR", "DAY", "NONE"],
         description: "How often an active website record should be crawled.",
       },
       ExecutionStatus: {
@@ -217,9 +217,11 @@ export const openApiDocument = {
           },
           label: {
             type: "string",
-            description: "Optional label used when the endpoint creates a temporary website record.",
+            description:
+              "Optional label used when the endpoint creates a temporary website record.",
             example: "Example",
           },
+          periodicity: { $ref: "#/components/schemas/Periodicity" },
           websiteRecordId: {
             type: "string",
             format: "uuid",
@@ -239,7 +241,7 @@ export const openApiDocument = {
           errors: {
             type: "array",
             items: { type: "string" },
-            example: ["periodicity must be one of MINUTE, HOUR, DAY"],
+            example: ["periodicity must be one of MINUTE, HOUR, DAY, NONE"],
           },
         },
       },
@@ -272,8 +274,58 @@ export const openApiDocument = {
       get: {
         tags: ["Website Records"],
         summary: "List website records",
-        description:
-          "Returns all website records. Pagination/filtering/sorting are still planned and not implemented yet.",
+        description: "Returns website records with pagination, filtering, and sorting.",
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            description: "Page number, starting from 1.",
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            description: "Maximum number of records to return.",
+            schema: { type: "integer", minimum: 1, default: 10 },
+          },
+          {
+            name: "url",
+            in: "query",
+            required: false,
+            description: "Case-insensitive substring filter for URL.",
+            schema: { type: "string" },
+          },
+          {
+            name: "label",
+            in: "query",
+            required: false,
+            description: "Case-insensitive substring filter for label.",
+            schema: { type: "string" },
+          },
+          {
+            name: "tags",
+            in: "query",
+            required: false,
+            description: "Comma-separated tag filter.",
+            schema: { type: "string", example: "test,demo" },
+          },
+          {
+            name: "sortBy",
+            in: "query",
+            required: false,
+            description: "Field used for sorting.",
+            schema: { type: "string", enum: ["url", "lastCrawledAt"], default: "url" },
+          },
+          {
+            name: "sortOrder",
+            in: "query",
+            required: false,
+            description: "Sort direction.",
+            schema: { type: "string", enum: ["asc", "desc"], default: "asc" },
+          },
+        ],
         responses: {
           "200": {
             description: "Website records.",
@@ -377,7 +429,23 @@ export const openApiDocument = {
       get: {
         tags: ["Executions"],
         summary: "List executions for one website record",
-        parameters: [websiteIdParameter],
+        parameters: [
+          websiteIdParameter,
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            description: "Page number, starting from 1.",
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            description: "Maximum number of records to return.",
+            schema: { type: "integer", minimum: 1, default: 10 },
+          },
+        ],
         responses: {
           "200": executionListResponse,
           "404": errorResponse,
@@ -424,6 +492,20 @@ export const openApiDocument = {
             required: false,
             description: "Optional website record filter.",
             schema: { type: "string", format: "uuid" },
+          },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            description: "Page number, starting from 1.",
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            description: "Maximum number of records to return.",
+            schema: { type: "integer", minimum: 1, default: 10 },
           },
         ],
         responses: {

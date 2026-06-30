@@ -21,9 +21,7 @@ export function startCrawlerWorkers(): Worker[] {
     workers.push(worker);
   }
 
-  console.log(
-    `Started ${workerCount} workers with ${concurrencyPerWorker} concurrency each`
-  );
+  console.log(`Started ${workerCount} workers with ${concurrencyPerWorker} concurrency each`);
 
   return workers;
 }

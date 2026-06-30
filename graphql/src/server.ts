@@ -1,7 +1,29 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-import { getLatestExecutions, listCrawledLinks, listCrawledPages, listWebsiteRecords } from "./database.js";
+import {
+  getLatestExecutions,
+  listCrawledLinks,
+  listCrawledPages,
+  listWebsiteRecords,
+} from "./database.js";
+
+type WebPageGraphql = {
+  identifier: string;
+  label: string;
+  url: string;
+  regexp: string;
+  tags: string[];
+  active: boolean;
+};
+
+type NodeGraphql = {
+  title: string | null;
+  url: string;
+  crawlTime: string | null;
+  links: NodeGraphql[];
+  owner: WebPageGraphql[];
+};
 
 const typeDefs = `#graphql
   type Query {
@@ -32,7 +54,7 @@ const resolvers = {
     websites: async () => {
       const records = await listWebsiteRecords();
 
-      return records.map(w => ({
+      return records.map((w) => ({
         identifier: w.id,
         label: w.label,
         url: w.url,
@@ -44,7 +66,7 @@ const resolvers = {
     nodes: async (_: any, args: { webPages?: string[] }) => {
       const latestExecutions = await getLatestExecutions(args.webPages ?? []);
 
-      const executionIds = latestExecutions.map(e => e.id);
+      const executionIds = latestExecutions.map((e) => e.id);
 
       const [pages, links, websites] = await Promise.all([
         listCrawledPages(executionIds),
@@ -53,24 +75,36 @@ const resolvers = {
       ]);
 
       // Map url → node
-      const nodeMap = new Map<string, any>();
+      const nodeMap = new Map<string, NodeGraphql>();
+      const getOrCreateNode = (url: string): NodeGraphql => {
+        const existing = nodeMap.get(url);
+        if (existing) {
+          return existing;
+        }
 
-      for (const p of pages) {
-        nodeMap.set(p.url, {
-          title: p.title,
-          url: p.url,
-          crawlTime: p.crawlTime?.toISOString(),
+        const node: NodeGraphql = {
+          title: null,
+          url,
+          crawlTime: null,
           links: [],
           owner: [],
-        });
+        };
+        nodeMap.set(url, node);
+        return node;
+      };
+
+      for (const p of pages) {
+        const node = getOrCreateNode(p.url);
+        node.title = p.title;
+        node.crawlTime = p.crawlTime?.toISOString() ?? null;
       }
 
       // Build links
       for (const l of links) {
-        const fromNode = nodeMap.get(l.fromUrl);
-        const toNode = nodeMap.get(l.toUrl);
+        const fromNode = getOrCreateNode(l.fromUrl);
+        const toNode = getOrCreateNode(l.toUrl);
 
-        if (fromNode && toNode) {
+        if (!fromNode.links.some((link) => link.url === toNode.url)) {
           fromNode.links.push(toNode);
         }
       }
@@ -101,14 +135,14 @@ const resolvers = {
 
       return Array.from(nodeMap.values());
     },
-  }
+  },
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });
 const port = Number(process.env.PORT ?? 4000);
 
 const { url } = await startStandaloneServer(server, {
-  listen: { port }
+  listen: { port },
 });
 
 console.log(`GraphQL API listening at ${url}`);

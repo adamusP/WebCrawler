@@ -36,6 +36,10 @@ docker compose down -v
 docker compose up --build
 ```
 
+Use the same reset if PostgreSQL rejects a value that exists in the current Prisma schema,
+for example `invalid input value for enum "Periodicity": "NONE"`. That means the local
+Docker volume was created from an older migration state.
+
 Open the frontend at:
 
 ```text
@@ -77,3 +81,18 @@ Invoke-RestMethod `
 ```
 
 Crawler results are stored in PostgreSQL as `CrawledPage`, `CrawledLink`, and `CrawlUrl` records.
+
+## Checks
+
+Run all TypeScript builds:
+
+```powershell
+npm run build
+```
+
+Run linting and formatting checks:
+
+```powershell
+npm run lint
+npm run format:check
+```

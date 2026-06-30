@@ -20,16 +20,13 @@ export type WebsiteRecord = {
   updatedAt: string;
 };
 
-
 export type LatestExecutionRow = {
   id: string;
   websiteRecordId: string;
   createdAt: Date;
 };
 
-export async function getLatestExecutions(
-  websiteIds: string[]
-): Promise<LatestExecutionRow[]> {
+export async function getLatestExecutions(websiteIds: string[]): Promise<LatestExecutionRow[]> {
   if (!websiteIds || !websiteIds.length) {
     const result = await pool.query<LatestExecutionRow>(
       `
@@ -75,7 +72,8 @@ export async function listWebsiteRecords(): Promise<WebsiteRecord[]> {
         "tags"
       FROM "WebsiteRecord"
       ORDER BY "createdAt" DESC
-    `);
+    `
+  );
 
   return result.rows;
 }
@@ -87,9 +85,7 @@ export type CrawledPageRow = {
   websiteRecordId: string;
 };
 
-export async function listCrawledPages(
-  executionIds?: string[]
-): Promise<CrawledPageRow[]> {
+export async function listCrawledPages(executionIds?: string[]): Promise<CrawledPageRow[]> {
   if (!executionIds || !executionIds.length) return [];
 
   const result = await pool.query<CrawledPageRow>(
@@ -101,6 +97,7 @@ export async function listCrawledPages(
       "websiteRecordId"
     FROM "CrawledPage"
     WHERE "executionId" = ANY($1)
+    ORDER BY "url", "crawlTime" DESC
     `,
     [executionIds]
   );
@@ -109,25 +106,29 @@ export async function listCrawledPages(
 }
 
 export type CrawledLinkRow = {
+  websiteRecordId: string;
   fromUrl: string;
   toUrl: string;
+  matchesBoundary: boolean;
+  wasCrawled: boolean;
 };
 
-export async function listCrawledLinks(
-  executionIds?: string[]
-): Promise<CrawledLinkRow[]> {
+export async function listCrawledLinks(executionIds?: string[]): Promise<CrawledLinkRow[]> {
   if (!executionIds || !executionIds.length) return [];
 
   const result = await pool.query<CrawledLinkRow>(
-      `
-      SELECT
+    `
+      SELECT DISTINCT
+        "websiteRecordId",
         "fromUrl",
-        "toUrl"
+        "toUrl",
+        "matchesBoundary",
+        "wasCrawled"
       FROM "CrawledLink"
       WHERE "executionId" = ANY($1)
       `,
-      [executionIds]
-    );
+    [executionIds]
+  );
 
-    return result.rows;
+  return result.rows;
 }

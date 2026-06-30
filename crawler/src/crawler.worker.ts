@@ -3,15 +3,11 @@ import { parentPort, threadId } from "worker_threads";
 
 const concurrencyPerWorker = Number(process.env.CONCURRENCY_PER_WORKER ?? "8");
 
-const worker = new Worker(
-  "crawl",
-  new URL("./crawler.processor.js", import.meta.url).pathname,
-  {
-    connection: { host: "redis", port: 6379 },
-    concurrency: concurrencyPerWorker,
-    useWorkerThreads: true,
-  }
-);
+const worker = new Worker("crawl", new URL("./crawler.processor.js", import.meta.url).pathname, {
+  connection: { host: "redis", port: 6379 },
+  concurrency: concurrencyPerWorker,
+  useWorkerThreads: true,
+});
 
 async function shutdown(): Promise<void> {
   console.log(`Crawler worker shutting down pid=${process.pid} threadId=${threadId}`);

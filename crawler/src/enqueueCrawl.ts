@@ -31,7 +31,10 @@ export function periodicityToMs(periodicity: string | null): number {
   }
 }
 
-export async function enqueueUrlForCrawling(crawlJobDataInput: CrawlJobDataInput, periodicity: string | null = null): Promise<boolean> {
+export async function enqueueUrlForCrawling(
+  crawlJobDataInput: CrawlJobDataInput,
+  periodicity: string | null = null
+): Promise<boolean> {
   const wasScheduled = await scheduleCrawlUrl({
     executionId: crawlJobDataInput.executionId,
     websiteRecordId: crawlJobDataInput.websiteRecordId,
@@ -39,7 +42,9 @@ export async function enqueueUrlForCrawling(crawlJobDataInput: CrawlJobDataInput
   });
 
   if (!wasScheduled) {
-    console.debug(`Failed to schedule crawl for ${crawlJobDataInput.websiteRecordId}:${crawlJobDataInput.url}:${crawlJobDataInput.executionId}`);
+    console.debug(
+      `Failed to schedule crawl for ${crawlJobDataInput.websiteRecordId}:${crawlJobDataInput.url}:${crawlJobDataInput.executionId}`
+    );
     return false;
   }
 
@@ -48,13 +53,11 @@ export async function enqueueUrlForCrawling(crawlJobDataInput: CrawlJobDataInput
     nextDelay: periodicityToMs(periodicity),
   };
 
-  await crawlQueue.add("crawl-url", crawlJobData,
-    {
-     jobId: `${crawlJobDataInput.websiteRecordId}-${crawlJobDataInput.executionId}-${encodeBase64Url(crawlJobDataInput.url)}`,
-     removeOnComplete: true,
-     removeOnFail: true,
-    }
-  );
+  await crawlQueue.add("crawl-url", crawlJobData, {
+    jobId: `${crawlJobDataInput.websiteRecordId}-${crawlJobDataInput.executionId}-${encodeBase64Url(crawlJobDataInput.url)}`,
+    removeOnComplete: true,
+    removeOnFail: true,
+  });
 
   return true;
 }
@@ -67,18 +70,18 @@ export async function scheduleNext(crawlJobData: CrawlJobData): Promise<boolean>
   });
 
   if (!wasScheduled) {
-    console.debug(`Failed to schedule next crawl for ${crawlJobData.websiteRecordId}:${crawlJobData.url}:${crawlJobData.executionId}`);
+    console.debug(
+      `Failed to schedule next crawl for ${crawlJobData.websiteRecordId}:${crawlJobData.url}:${crawlJobData.executionId}`
+    );
     return false;
   }
 
-  await crawlQueue.add("crawl-url", crawlJobData,
-    {
-     delay: crawlJobData.nextDelay,
-     jobId: `${crawlJobData.websiteRecordId}-${crawlJobData.executionId}-${encodeBase64Url(crawlJobData.url)}`,
-     removeOnComplete: true,
-     removeOnFail: true,
-    }
-  );
+  await crawlQueue.add("crawl-url", crawlJobData, {
+    delay: crawlJobData.nextDelay,
+    jobId: `${crawlJobData.websiteRecordId}-${crawlJobData.executionId}-${encodeBase64Url(crawlJobData.url)}`,
+    removeOnComplete: true,
+    removeOnFail: true,
+  });
 
   return true;
 }

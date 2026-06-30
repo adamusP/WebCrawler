@@ -102,14 +102,6 @@ export function normalizePeriodicity(value: unknown): Periodicity | null {
   return allowedPeriodicities.has(normalized as Periodicity) ? (normalized as Periodicity) : null;
 }
 
-function normalizeTags(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.map(String).map((tag) => tag.trim()).filter(Boolean);
-}
-
 export async function listWebsiteRecords(): Promise<WebsiteRecord[]> {
   const result = await pool.query(
     `
@@ -132,7 +124,6 @@ export async function listWebsiteRecords(): Promise<WebsiteRecord[]> {
 
   return result.rows.map(mapWebsiteRecord);
 }
-
 
 export async function listWebsitesPaginated({
   url,
@@ -170,14 +161,9 @@ export async function listWebsitesPaginated({
     params.push(tags);
   }
 
-  const whereClause = conditions.length
-    ? `WHERE ${conditions.join(" AND ")}`
-    : "";
+  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const orderField =
-    sortBy === "lastCrawledAt"
-      ? `e."startedAt"`
-      : `w."url"`;
+  const orderField = sortBy === "lastCrawledAt" ? `e."startedAt"` : `w."url"`;
 
   const result = await pool.query(
     `
@@ -218,7 +204,6 @@ export async function listWebsitesPaginated({
 
   return result.rows;
 }
-
 
 export async function getWebsiteRecord(id: string): Promise<WebsiteRecord | null> {
   const result = await pool.query(
@@ -401,14 +386,11 @@ export async function listExecutionsPaginated({
     LIMIT $${websiteRecordId ? 2 : 1}
     OFFSET $${websiteRecordId ? 3 : 2}
     `,
-    websiteRecordId
-      ? [websiteRecordId, limit, offset]
-      : [limit, offset]
+    websiteRecordId ? [websiteRecordId, limit, offset] : [limit, offset]
   );
 
   return result.rows;
 }
-
 
 export async function createExecutionForWebsiteRecord(
   websiteRecordId: string
