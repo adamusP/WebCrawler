@@ -9,82 +9,31 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
+  --color-primary: #0b4bb3;
+  --color-primary-hover: #01287a;
+
+  --color-bg-main: #ffffff;
+  --color-bg-sidebar: #f8fafc;
+  --color-bg-switcher: #f1f5f9;
+  --color-border: #cbd5e1;
+
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+
+  --color-success: #10b981;
+  --color-danger: #ef4444;
 }
 
 * {
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#root {
   margin: 0;
-}
-
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 16px 24px;
-  border-bottom: 1px solid #d7dee2;
-  background: #ffffff;
-}
-
-.toolbar h1,
-.panel h2 {
-  margin: 0;
-}
-
-.status {
-  display: flex;
-  gap: 16px;
-  color: #4d5b63;
-  font-size: 14px;
-}
-
-.layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(260px, 360px) 1fr;
-  min-height: 0;
-}
-
-.panel {
-  padding: 20px;
-  border-right: 1px solid #d7dee2;
-  background: #ffffff;
-}
-
-.panel p {
-  color: #4d5b63;
-  line-height: 1.5;
-}
-
-.graph-surface {
-  display: grid;
-  place-items: center;
-  min-height: 480px;
-  color: #4d5b63;
-}
-
-@media (max-width: 760px) {
-  .toolbar,
-  .status {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .panel {
-    border-right: 0;
-    border-bottom: 1px solid #d7dee2;
-  }
+  padding: 0;
+  width: 100%;
+  height: 100%;
 }
