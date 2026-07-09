@@ -7,34 +7,48 @@ const ITEMS_PER_PAGE = 4;
 export default function WebEntriesList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"url" | "lastCrawledAt">("url");
 
-  const items = MOCK_DATA;
+  const resultItems = useMemo(() => {
+    let items = MOCK_DATA;
 
-  const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return items;
+    if (searchQuery.trim()) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      items = items.filter((item) => {
+        const matchesUrl = item.url.toLowerCase().includes(lowerCaseQuery);
+        const matchesLabel = item.label.toLowerCase().includes(lowerCaseQuery);
+        const matchesTags = item.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery));
+        return matchesUrl || matchesLabel || matchesTags;
+      });
+    }
+    return [...items].sort((a, b) => {
+      if (sortBy === "url") {
+        return a.url.localeCompare(b.url);
+      } else {
+        const timeA = a.lastCrawledAt ? a.lastCrawledAt.getTime() : 0;
+        const timeB = b.lastCrawledAt ? b.lastCrawledAt.getTime() : 0;
 
-    const lowerCaseQuery = searchQuery.toLowerCase();
-
-    return items.filter((item) => {
-      const matchesUrl = item.url.toLowerCase().includes(lowerCaseQuery);
-      const matchesLabel = item.label.toLowerCase().includes(lowerCaseQuery);
-      const matchesTags = item.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery));
-
-      return matchesUrl || matchesLabel || matchesTags;
+        return timeB - timeA;
+      }
     });
-  }, [searchQuery]);
+  }, [searchQuery, sortBy]);
 
-  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE) || 1;
+  const totalPages = Math.ceil(resultItems.length / ITEMS_PER_PAGE) || 1;
 
   const safeCurrentPage = currentPage > totalPages ? 1 : currentPage;
 
   const paginatedItems = useMemo(() => {
     const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-    return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredItems, safeCurrentPage]);
+    return resultItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [resultItems, safeCurrentPage]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as "url" | "lastCrawledAt");
     setCurrentPage(1);
   };
 
@@ -50,6 +64,10 @@ export default function WebEntriesList() {
           onChange={handleSearchChange}
           className={styles.searchInput}
         />
+        <select value={sortBy} onChange={handleSortChange} className={styles.sortSelect}>
+          <option value="url">Sort by URL</option>
+          <option value="lastCrawledAt">Sort by Last Crawled</option>
+        </select>
       </div>
 
       <div className={styles.list}>
