@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+/* Card styles for each web entry */
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background-color: var(--color-bg-main);
+}
+.label {
+  font-weight: bold;
+  margin: 0;
+}
+
+.url {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageButton {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-main);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 0.85rem;
+}
