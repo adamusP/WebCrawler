@@ -51,25 +51,100 @@
   border-color: var(--color-primary);
 }
 
-/* Card styles for each web entry */
 .card {
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0.75rem;
   display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   background-color: var(--color-bg-main);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  align-items: flex-start;
 }
+
+.card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .label {
-  font-weight: bold;
   margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .url {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  color: #64748b;
+  text-decoration: none;
   word-break: break-all;
+}
+
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.statusSuccess {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+.statusFailed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+.statusRunning {
+  background-color: #fef9c3;
+  color: #ca8a04;
+}
+.statusNone {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Tagy */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tag {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Patička: Periodicity a Čas */
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 /* Pagination */

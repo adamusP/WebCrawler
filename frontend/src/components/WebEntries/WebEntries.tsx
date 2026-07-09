@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import styles from "./WebEntries.module.css";
-import { MOCK_DATA } from "../../components/types/website";
+import { WebsiteRecord, MOCK_DATA } from "../../components/types/website";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -52,6 +52,19 @@ export default function WebEntriesList() {
     setCurrentPage(1);
   };
 
+  const getStatusClass = (status: WebsiteRecord["lastStatus"]) => {
+    switch (status) {
+      case "SUCCEEDED":
+        return styles.statusSuccess;
+      case "FAILED":
+        return styles.statusFailed;
+      case "RUNNING":
+        return styles.statusRunning;
+      default:
+        return styles.statusNone;
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Web Entries</h2>
@@ -79,8 +92,37 @@ export default function WebEntriesList() {
           paginatedItems.map((item) => {
             return (
               <div key={item.id} className={styles.card}>
-                <h4 className={styles.label}>{item.label}</h4>
-                <span className={styles.url}>{item.url}</span>
+                <input type="checkbox" style={{ marginTop: "0.4rem", cursor: "pointer" }} />
+
+                <div className={styles.cardContent}>
+                  <div className={styles.cardHeader}>
+                    <h4 className={styles.label}>{item.label}</h4>
+                    <span className={`${styles.statusBadge} ${getStatusClass(item.lastStatus)}`}>
+                      {item.lastStatus || "UNTESTED"}
+                    </span>
+                  </div>
+
+                  <a href={item.url} target="_blank" rel="noreferrer" className={styles.url}>
+                    {item.url}
+                  </a>
+
+                  {item.tags.length > 0 && (
+                    <div className={styles.tags}>
+                      {item.tags.map((tag, idx) => (
+                        <span key={idx} className={styles.tag}>
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className={styles.cardFooter}>
+                    <span>Period: {item.periodicity}</span>
+                    <span>
+                      {item.lastCrawledAt ? item.lastCrawledAt.toLocaleString() : "Never crawled"}
+                    </span>
+                  </div>
+                </div>
               </div>
             );
           })
