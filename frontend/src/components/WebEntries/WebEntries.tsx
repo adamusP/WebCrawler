@@ -6,20 +6,51 @@ const ITEMS_PER_PAGE = 4;
 
 export default function WebEntriesList() {
   const [currentPage, setCurrentPage] = useState(1);
-  let items = MOCK_DATA;
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE) || 1;
+  const items = MOCK_DATA;
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
+    return items.filter((item) => {
+      const matchesUrl = item.url.toLowerCase().includes(lowerCaseQuery);
+      const matchesLabel = item.label.toLowerCase().includes(lowerCaseQuery);
+      const matchesTags = item.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery));
+
+      return matchesUrl || matchesLabel || matchesTags;
+    });
+  }, [searchQuery]);
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE) || 1;
 
   const safeCurrentPage = currentPage > totalPages ? 1 : currentPage;
 
   const paginatedItems = useMemo(() => {
     const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-    return items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [items, safeCurrentPage]);
+    return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredItems, safeCurrentPage]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
 
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Web Entries</h2>
+
+      <div className={styles.controls}>
+        <input
+          type="text"
+          placeholder="Filter by URL, Label, or Tag..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className={styles.searchInput}
+        />
+      </div>
 
       <div className={styles.list}>
         {paginatedItems.length === 0 ? (

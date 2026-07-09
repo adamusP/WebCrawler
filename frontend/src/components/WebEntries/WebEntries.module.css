@@ -21,6 +21,25 @@
   margin-bottom: 1rem;
 }
 
+.controls {
+  margin-bottom: 1rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
 /* Card styles for each web entry */
 .card {
   border: 1px solid var(--color-border);
