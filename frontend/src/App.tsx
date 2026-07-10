@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./App.module.css";
 import WebEntriesList from "./components/WebEntries/WebEntries";
 import ExecutionsList from "./components/Executions/Executions";
-import { GraphContainer } from "./components/GraphView/Graphview";
+import { GraphContainer } from "./components/GraphView/GraphContainer";
 
 export default function App() {
   const [activeView, setActiveView] = useState<"executions" | "graph">("executions");
