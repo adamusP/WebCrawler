@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import styles from "./WebEntries.module.css";
 import { WebsiteRecord, WebsiteRecordDTO, mapWebsiteRecord } from "../../components/types/website";
-import WebEntryModal from "./WebEntryModal";
+import WebEntryModal, { WebEntryFormData } from "./WebEntryModal";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -16,32 +16,68 @@ export default function WebEntriesList() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchWebsites = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("http://localhost:3000/api/websites");
+  const fetchWebsites = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("http://localhost:3000/api/websites");
 
-        if (!response.ok) {
-          throw new Error(`Server Error: ${response.status}`);
-        }
-
-        const data: WebsiteRecordDTO[] = await response.json();
-
-        const mappedData = data.map(mapWebsiteRecord);
-
-        setWebsites(mappedData);
-        setError(null);
-      } catch (err) {
-        console.error("Server Error:", err);
-        setError("Failed to fetch data from the server. Please try again later.");
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error(`Server Error: ${response.status}`);
       }
-    };
 
+      const data: WebsiteRecordDTO[] = await response.json();
+
+      const mappedData = data.map(mapWebsiteRecord);
+
+      setWebsites(mappedData);
+      setError(null);
+    } catch (err) {
+      console.error("Server Error:", err);
+      setError("Failed to fetch data from the server. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchWebsites();
   }, []);
+
+  const handleSaveWebsite = async (formData: WebEntryFormData) => {
+    try {
+      const tagsArray = formData.tagsString
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
+      const payload = {
+        label: formData.label,
+        url: formData.url,
+        boundaryRegexp: formData.boundaryRegexp,
+        periodicity: formData.periodicity,
+        active: formData.active,
+        tags: tagsArray,
+      };
+
+      const response = await fetch("http://localhost:3000/api/websites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save the record.");
+      }
+
+      setIsModalOpen(false);
+      fetchWebsites();
+    } catch (err) {
+      console.error("Failed to save the record:", err);
+      alert("Failed to save the record. Please check the console for more details.");
+    }
+  };
 
   const resultItems = useMemo(() => {
     let items = websites;
@@ -191,7 +227,9 @@ export default function WebEntriesList() {
           Next
         </button>
       </div>
-      <WebEntryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={() => {}} />
+      {isModalOpen && (
+        <WebEntryModal onClose={() => setIsModalOpen(false)} onSave={handleSaveWebsite} />
+      )}
     </div>
   );
 }

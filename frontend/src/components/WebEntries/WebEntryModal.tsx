@@ -12,20 +12,12 @@ export interface WebEntryFormData {
 }
 
 interface WebEntryModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onSave: (data: WebEntryFormData) => void;
   initialData?: WebEntryFormData | null;
 }
 
-export default function WebEntryModal({
-  isOpen,
-  onClose,
-  onSave,
-  initialData,
-}: WebEntryModalProps) {
-  if (!isOpen) return null;
-
+export default function WebEntryModal({ onClose, onSave, initialData }: WebEntryModalProps) {
   const {
     register,
     handleSubmit,
