@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "./App.module.css";
 import WebEntriesList from "./components/WebEntries/WebEntries";
+import ExecutionsList from "./components/Executions/Executions";
 
 export default function App() {
   const [activeView, setActiveView] = useState<"executions" | "graph">("executions");
@@ -31,7 +32,7 @@ export default function App() {
         {activeView === "executions" ? (
           <section className={styles.container}>
             <h2>Executions</h2>
-            <div className={styles.placeholderContent}>Executions table</div>
+            <ExecutionsList websiteId={selectedWebsiteId || undefined} />
           </section>
         ) : (
           <section className={styles.container}>
