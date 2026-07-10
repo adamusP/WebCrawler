@@ -10,10 +10,6 @@ export default function App() {
     <div className={styles.appContainer}>
       <aside className={styles.sidebar}>
         <WebEntriesList />
-
-        <div className={styles.placeholderList}>
-          <p>List WebEntries</p>
-        </div>
       </aside>
 
       <main className={styles.mainContent}>

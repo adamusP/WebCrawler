@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import styles from "./WebEntries.module.css";
 import { WebsiteRecord, WebsiteRecordDTO, mapWebsiteRecord } from "../../components/types/website";
+import WebEntryModal from "./WebEntryModal";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -12,6 +13,8 @@ export default function WebEntriesList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"url" | "lastCrawledAt">("url");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchWebsites = async () => {
@@ -62,7 +65,7 @@ export default function WebEntriesList() {
         return timeB - timeA;
       }
     });
-  }, [searchQuery, sortBy]);
+  }, [websites, searchQuery, sortBy]);
 
   const totalPages = Math.ceil(resultItems.length / ITEMS_PER_PAGE) || 1;
 
@@ -99,6 +102,16 @@ export default function WebEntriesList() {
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Web Entries</h2>
+      <button>
+        <span
+          className={styles.addButton}
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          + Add New Record
+        </span>
+      </button>
 
       <div className={styles.controls}>
         <input
@@ -179,6 +192,7 @@ export default function WebEntriesList() {
           Next
         </button>
       </div>
+      <WebEntryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
