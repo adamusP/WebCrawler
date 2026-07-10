@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Execution, ExecutionDTO, mapExecution } from "../../components/types/execution";
 import styles from "./Executions.module.css";
 
@@ -7,10 +7,14 @@ interface ExecutionsListProps {
   onClearFilter: () => void;
 }
 
+const ITEMS_PER_PAGE = 8;
+
 export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsListProps) {
   const [executions, setExecutions] = useState<Execution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTriggering, setIsTriggering] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchExecutions = async () => {
     setIsLoading(true);
@@ -32,6 +36,7 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
 
   useEffect(() => {
     fetchExecutions();
+    setCurrentPage(1);
   }, [websiteId]);
 
   const handleStartExecution = async () => {
@@ -48,6 +53,7 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
 
       if (response.ok) {
         await fetchExecutions();
+        setCurrentPage(1);
       } else {
         console.error("Server responded with an error when starting execution");
       }
@@ -57,6 +63,15 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
       setIsTriggering(false);
     }
   };
+
+  const totalPages = Math.ceil(executions.length / ITEMS_PER_PAGE) || 1;
+
+  const safeCurrentPage = currentPage > totalPages ? 1 : currentPage;
+
+  const paginatedExecutions = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+    return executions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [executions, safeCurrentPage]);
 
   if (isLoading) return <div>Loading executions...</div>;
 
@@ -84,33 +99,54 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
           )}
         </div>
       </div>
-      {executions.length === 0 ? (
+      {paginatedExecutions.length === 0 ? (
         <p>No records found</p>
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Label</th>
-              <th>Status</th>
-              <th>Started</th>
-              <th>Ended</th>
-              <th>Pages</th>
-            </tr>
-          </thead>
-          <tbody>
-            {executions.map((ex) => (
-              <tr key={ex.id}>
-                <td>{ex.websiteRecordLabel}</td>
-                <td>
-                  <span className={styles[ex.status.toLowerCase()]}>{ex.status}</span>
-                </td>
-                <td>{ex.startedAt ? ex.startedAt.toLocaleString() : "Not started yet"}</td>
-                <td>{ex.endedAt ? ex.endedAt.toLocaleString() : "Did not end yet"}</td>
-                <td>{ex.pagesCrawled}</td>
+        <>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Label</th>
+                <th>Status</th>
+                <th>Started</th>
+                <th>Ended</th>
+                <th>Pages</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedExecutions.map((ex) => (
+                <tr key={ex.id}>
+                  <td>{ex.websiteRecordLabel}</td>
+                  <td>
+                    <span className={styles[ex.status.toLowerCase()]}>{ex.status}</span>
+                  </td>
+                  <td>{ex.startedAt ? ex.startedAt.toLocaleString() : "Not started yet"}</td>
+                  <td>{ex.endedAt ? ex.endedAt.toLocaleString() : "Did not end yet"}</td>
+                  <td>{ex.pagesCrawled}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className={styles.pagination}>
+            <button
+              type="button"
+              disabled={safeCurrentPage === 1}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+            >
+              Previous
+            </button>
+            <span>
+              Page {safeCurrentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={safeCurrentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
