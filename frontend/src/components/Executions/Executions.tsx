@@ -46,6 +46,7 @@ export default function ExecutionsList({ websiteId }: ExecutionsListProps) {
               <th>Label</th>
               <th>Status</th>
               <th>Started</th>
+              <th>Ended</th>
               <th>Pages</th>
             </tr>
           </thead>
@@ -56,7 +57,8 @@ export default function ExecutionsList({ websiteId }: ExecutionsListProps) {
                 <td>
                   <span className={styles[ex.status.toLowerCase()]}>{ex.status}</span>
                 </td>
-                <td>{ex.startedAt.toLocaleString()}</td>
+                <td>{ex.startedAt ? ex.startedAt.toLocaleString() : "Not started yet"}</td>
+                <td>{ex.endedAt ? ex.endedAt.toLocaleString() : "Did not end yet"}</td>
                 <td>{ex.pagesCrawled}</td>
               </tr>
             ))}

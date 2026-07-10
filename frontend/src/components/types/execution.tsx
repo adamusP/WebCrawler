@@ -5,7 +5,7 @@ export interface ExecutionDTO {
   websiteRecordId: string;
   websiteRecordLabel: string;
   status: ExecutionStatus;
-  startedAt: string;
+  startedAt: string | null;
   endedAt: string | null;
   pagesCrawled: number;
   createdAt: string;
@@ -16,7 +16,7 @@ export interface Execution {
   websiteRecordId: string;
   websiteRecordLabel: string;
   status: ExecutionStatus;
-  startedAt: Date;
+  startedAt: Date | null;
   endedAt: Date | null;
   pagesCrawled: number;
   createdAt: Date;
@@ -24,7 +24,7 @@ export interface Execution {
 
 export const mapExecution = (dto: ExecutionDTO): Execution => ({
   ...dto,
-  startedAt: new Date(dto.startedAt),
+  startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
   endedAt: dto.endedAt ? new Date(dto.endedAt) : null,
   createdAt: new Date(dto.createdAt),
 });

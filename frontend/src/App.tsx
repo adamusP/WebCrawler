@@ -31,7 +31,6 @@ export default function App() {
 
         {activeView === "executions" ? (
           <section className={styles.container}>
-            <h2>Executions</h2>
             <ExecutionsList websiteId={selectedWebsiteId || undefined} />
           </section>
         ) : (
