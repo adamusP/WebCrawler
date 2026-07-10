@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { GET_GRAPH_NODES } from "../../graphql/queries";
 import { GraphView } from "./Graphview";
+import { transformGraphqlToCytoscape } from "../../utils/graphTransform";
 
 interface GraphContainerProps {
   selectedWebPages: string[];
@@ -15,7 +16,10 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
     pollInterval: 5000,
   });
 
-  const rawNodes = data?.nodes ?? [];
+  const transformedElements = useMemo(() => {
+    const rawNodes = data?.nodes ?? [];
+    return transformGraphqlToCytoscape(rawNodes);
+  }, [data]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -27,7 +31,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
       </div>
 
       <div style={{ flex: 1, minHeight: "500px" }}>
-        <GraphView />
+        <GraphView elements={transformedElements} />
       </div>
     </div>
   );

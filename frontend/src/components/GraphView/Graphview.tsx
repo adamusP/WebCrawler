@@ -1,25 +1,19 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 
-export const GraphView: React.FC = () => {
+interface GraphViewProps {
+  elements: cytoscape.ElementDefinition[];
+}
+
+export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const mockElements: cytoscape.ElementDefinition[] = [
-    { data: { id: "page1", label: "Home Page (Google)" } },
-    { data: { id: "page2", label: "About Us" } },
-    { data: { id: "page3", label: "Contact (Forbidden)", isBoundary: true } },
-
-    { data: { id: "edge1", source: "page1", target: "page2" } },
-    { data: { id: "edge2", source: "page1", target: "page3" } },
-    { data: { id: "edge3", source: "page2", target: "page1" } },
-  ];
-
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || elements.length === 0) return;
 
     const cy = cytoscape({
       container: containerRef.current,
-      elements: mockElements,
+      elements: elements,
       style: [
         {
           selector: "node",
@@ -36,7 +30,7 @@ export const GraphView: React.FC = () => {
           },
         },
         {
-          selector: "node[isBoundary]",
+          selector: "node[?isBoundary]",
           style: {
             "background-color": "#ff4d4f",
             "border-width": "2px",
@@ -64,7 +58,7 @@ export const GraphView: React.FC = () => {
     return () => {
       cy.destroy();
     };
-  }, []);
+  }, [elements]);
 
   return (
     <div style={{ padding: "10px", height: "100%" }}>
