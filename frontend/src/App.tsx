@@ -5,12 +5,18 @@ import ExecutionsList from "./components/Executions/Executions";
 
 export default function App() {
   const [activeView, setActiveView] = useState<"executions" | "graph">("executions");
+  const [activeSelection, setActiveSelection] = useState<string[]>([]);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(null);
 
   return (
     <div className={styles.appContainer}>
       <aside className={styles.sidebar}>
-        <WebEntriesList />
+        <WebEntriesList
+          selectedWebsiteId={selectedWebsiteId}
+          onSelectWebsite={setSelectedWebsiteId}
+          activeSelection={activeSelection}
+          onSelectionChange={setActiveSelection}
+        />
       </aside>
 
       <main className={styles.mainContent}>
@@ -31,7 +37,10 @@ export default function App() {
 
         {activeView === "executions" ? (
           <section className={styles.container}>
-            <ExecutionsList websiteId={selectedWebsiteId || undefined} />
+            <ExecutionsList
+              websiteId={selectedWebsiteId || undefined}
+              onClearFilter={() => setSelectedWebsiteId(null)}
+            />
           </section>
         ) : (
           <section className={styles.container}>

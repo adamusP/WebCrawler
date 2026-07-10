@@ -5,7 +5,19 @@ import WebEntryModal, { WebEntryFormData } from "./WebEntryModal";
 
 const ITEMS_PER_PAGE = 4;
 
-export default function WebEntriesList() {
+interface WebEntriesListProps {
+  selectedWebsiteId: string | null;
+  onSelectWebsite: (id: string | null) => void;
+  activeSelection: string[];
+  onSelectionChange: (ids: string[]) => void;
+}
+
+export default function WebEntriesList({
+  selectedWebsiteId,
+  onSelectWebsite,
+  activeSelection,
+  onSelectionChange,
+}: WebEntriesListProps) {
   const [websites, setWebsites] = useState<WebsiteRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -179,6 +191,14 @@ export default function WebEntriesList() {
     }
   };
 
+  const toggleSelection = (id: string) => {
+    if (activeSelection.includes(id)) {
+      onSelectionChange(activeSelection.filter((item) => item !== id));
+    } else {
+      onSelectionChange([...activeSelection, id]);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Web Entries</h2>
@@ -216,8 +236,19 @@ export default function WebEntriesList() {
           <p style={{ textAlign: "center", color: "#64748b" }}>No records found.</p>
         ) : (
           paginatedItems.map((item) => (
-            <div key={item.id} className={styles.card}>
-              <input type="checkbox" style={{ marginTop: "0.4rem", cursor: "pointer" }} />
+            <div
+              key={item.id}
+              className={`${styles.card} ${selectedWebsiteId === item.id ? styles.active : ""}`}
+              onClick={() => onSelectWebsite(item.id)}
+            >
+              <input
+                type="checkbox"
+                checked={activeSelection.includes(item.id)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  toggleSelection(item.id);
+                }}
+              />
 
               <div className={styles.cardContent}>
                 <div className={styles.cardHeader}>
