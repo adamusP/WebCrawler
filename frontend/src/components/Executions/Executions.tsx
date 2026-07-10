@@ -62,22 +62,28 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
 
   return (
     <div className={styles.container}>
-      <h2>{websiteId ? "Website Executions" : "All Executions"}</h2>
-      {websiteId && (
-        <>
-          <button
-            type="button"
-            className={styles.startButton}
-            onClick={handleStartExecution}
-            disabled={isTriggering}
-          >
-            {isTriggering ? "Starting..." : "Run Crawler Now"}
-          </button>
-          <button type="button" onClick={onClearFilter} className={styles.clearFilterButton}>
-            Show all executions
-          </button>
-        </>
-      )}
+      <div className={styles.headerBar}>
+        <h2>{websiteId ? "Website Executions" : "All Executions"}</h2>
+
+        <div className={styles.actions}>
+          {websiteId && (
+            <>
+              <button
+                type="button"
+                className={styles.startButton}
+                onClick={handleStartExecution}
+                disabled={isTriggering}
+              >
+                {isTriggering ? "Starting..." : "Run Crawler Now"}
+              </button>
+
+              <button type="button" className={styles.backButton} onClick={onClearFilter}>
+                ← Back to All
+              </button>
+            </>
+          )}
+        </div>
+      </div>
       {executions.length === 0 ? (
         <p>No records found</p>
       ) : (
