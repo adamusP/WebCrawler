@@ -191,7 +191,7 @@ export default function WebEntriesList() {
           Next
         </button>
       </div>
-      <WebEntryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <WebEntryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={() => {}} />
     </div>
   );
 }
