@@ -102,15 +102,14 @@ export default function WebEntriesList() {
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Web Entries</h2>
-      <button>
-        <span
-          className={styles.addButton}
-          onClick={() => {
-            setIsModalOpen(true);
-          }}
-        >
-          + Add New Record
-        </span>
+      <button
+        type="button"
+        className={styles.addButton}
+        onClick={() => {
+          setIsModalOpen(true);
+        }}
+      >
+        <span>+ Add New Record</span>
       </button>
 
       <div className={styles.controls}>
