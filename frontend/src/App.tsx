@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "./App.module.css";
 import WebEntriesList from "./components/WebEntries/WebEntries";
 import ExecutionsList from "./components/Executions/Executions";
+import { GraphContainer } from "./components/GraphView/Graphview";
 
 export default function App() {
   const [activeView, setActiveView] = useState<"executions" | "graph">("executions");
@@ -44,8 +45,7 @@ export default function App() {
           </section>
         ) : (
           <section className={styles.container}>
-            <h2>Cytoscape Visualization</h2>
-            <div className={styles.placeholderContent}>Cytoscape.js Canvas</div>
+            <GraphContainer selectedWebPages={activeSelection} />
           </section>
         )}
       </main>
