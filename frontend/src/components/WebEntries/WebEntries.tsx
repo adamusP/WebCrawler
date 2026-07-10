@@ -16,6 +16,8 @@ export default function WebEntriesList() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [editingWebsite, setEditingWebsite] = useState<WebsiteRecord | null>(null);
+
   const fetchWebsites = async () => {
     try {
       setIsLoading(true);
@@ -59,8 +61,13 @@ export default function WebEntriesList() {
         tags: tagsArray,
       };
 
-      const response = await fetch("http://localhost:3000/api/websites", {
-        method: "POST",
+      const isEdit = !!editingWebsite;
+      const url = isEdit
+        ? `http://localhost:3000/api/websites/${editingWebsite.id}`
+        : "http://localhost:3000/api/websites";
+
+      const response = await fetch(url, {
+        method: isEdit ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -72,12 +79,49 @@ export default function WebEntriesList() {
       }
 
       setIsModalOpen(false);
+      setEditingWebsite(null);
       fetchWebsites();
     } catch (err) {
       console.error("Failed to save the record:", err);
       alert("Failed to save the record. Please check the console for more details.");
     }
   };
+
+  const handleDeleteWebsite = async (id: string, label: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${label}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/websites/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete the record.");
+
+      fetchWebsites();
+    } catch (err) {
+      console.error("Failed to delete the record:", err);
+      alert("Failed to save the record. Please check the console for more details.");
+    }
+  };
+
+  const openEditModal = (item: WebsiteRecord) => {
+    setEditingWebsite(item);
+    setIsModalOpen(true);
+  };
+
+  const modalInitialData = useMemo(() => {
+    if (!editingWebsite) return null;
+    return {
+      label: editingWebsite.label,
+      url: editingWebsite.url,
+      boundaryRegexp: editingWebsite.boundaryRegexp,
+      periodicity: editingWebsite.periodicity as "MINUTE" | "HOUR" | "DAY" | "NONE",
+      active: editingWebsite.active,
+      tagsString: editingWebsite.tags.join(", "),
+    };
+  }, [editingWebsite]);
 
   const resultItems = useMemo(() => {
     let items = websites;
@@ -142,6 +186,7 @@ export default function WebEntriesList() {
         type="button"
         className={styles.addButton}
         onClick={() => {
+          setEditingWebsite(null);
           setIsModalOpen(true);
         }}
       >
@@ -177,9 +222,29 @@ export default function WebEntriesList() {
               <div className={styles.cardContent}>
                 <div className={styles.cardHeader}>
                   <h4 className={styles.label}>{item.label}</h4>
-                  <span className={`${styles.statusBadge} ${getStatusClass(item.lastStatus)}`}>
-                    {item.lastStatus || "UNTESTED"}
-                  </span>
+                  <div className={styles.cardHeaderRight}>
+                    <span className={`${styles.statusBadge} ${getStatusClass(item.lastStatus)}`}>
+                      {item.lastStatus || "UNTESTED"}
+                    </span>
+
+                    <button
+                      type="button"
+                      title="Edit Record"
+                      onClick={() => openEditModal(item)}
+                      className={`${styles.actionButton} ${styles.editButton}`}
+                    >
+                      E
+                    </button>
+
+                    <button
+                      type="button"
+                      title="Delete Record"
+                      onClick={() => handleDeleteWebsite(item.id, item.label)}
+                      className={`${styles.actionButton} ${styles.deleteButton}`}
+                    >
+                      D
+                    </button>
+                  </div>
                 </div>
 
                 <a href={item.url} target="_blank" rel="noreferrer" className={styles.url}>
@@ -228,7 +293,14 @@ export default function WebEntriesList() {
         </button>
       </div>
       {isModalOpen && (
-        <WebEntryModal onClose={() => setIsModalOpen(false)} onSave={handleSaveWebsite} />
+        <WebEntryModal
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingWebsite(null);
+          }}
+          onSave={handleSaveWebsite}
+          initialData={modalInitialData}
+        />
       )}
     </div>
   );
