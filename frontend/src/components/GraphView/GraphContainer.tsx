@@ -9,13 +9,19 @@ interface GraphContainerProps {
   selectedWebPages: string[];
 }
 
+const DEFAULT_POLL_INTERVAL = 5000;
+
 export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages }) => {
   const [viewMode, setViewMode] = useState<GraphViewMode>("website");
+  const [isLiveMode, setIsLiveMode] = useState<boolean>(false);
+
+  const callInterval = isLiveMode ? DEFAULT_POLL_INTERVAL : 0;
   const { loading, error, data } = useQuery(GET_GRAPH_NODES, {
     variables: {
       webPages: selectedWebPages.length > 0 ? selectedWebPages : null,
     },
-    pollInterval: 5000,
+    pollInterval: callInterval,
+    fetchPolicy: "network-only",
   });
 
   const transformedElements = useMemo(() => {
@@ -45,6 +51,22 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
             onClick={() => setViewMode("domain")}
           >
             Domain View
+          </button>
+        </div>
+        <div className={styles.viewModeContainer}>
+          <button
+            type="button"
+            className={`${styles.modeButton} ${isLiveMode ? styles.activeMode : ""}`}
+            onClick={() => setIsLiveMode(true)}
+          >
+            Live Mode
+          </button>
+          <button
+            type="button"
+            className={`${styles.modeButton} ${!isLiveMode ? styles.activeMode : ""}`}
+            onClick={() => setIsLiveMode(false)}
+          >
+            Static Mode
           </button>
         </div>
       </div>
