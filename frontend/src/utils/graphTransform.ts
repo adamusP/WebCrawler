@@ -10,23 +10,24 @@ export const transformGraphqlToCytoscape = (
 
   for (const node of rawNodes) {
     if (!visitedNodes.has(node.url)) {
-      console.log("Processing node:", node.url, "with title:", node.title);
       visitedNodes.add(node.url);
 
-      const nodeLabel = node.title || node.url;
+      const isBoundaryNode = !node.crawlTime;
 
       elements.push({
         data: {
           id: node.url,
-          label: nodeLabel,
+          label: node.title || node.url,
           title: node.title,
           crawlTime: node.crawlTime,
           owner: node.owner,
-          isBoundary: false,
+          isBoundary: isBoundaryNode,
         },
       });
     }
+  }
 
+  for (const node of rawNodes) {
     for (const link of node.links) {
       elements.push({
         data: {
@@ -35,23 +36,7 @@ export const transformGraphqlToCytoscape = (
           target: link.url,
         },
       });
-
-      if (!visitedNodes.has(link.url)) {
-        visitedNodes.add(link.url);
-
-        elements.push({
-          data: {
-            id: link.url,
-            label: link.title || link.url,
-            title: link.title,
-            crawlTime: null,
-            owner: [],
-            isBoundary: true,
-          },
-        });
-      }
     }
   }
-
   return elements;
 };
