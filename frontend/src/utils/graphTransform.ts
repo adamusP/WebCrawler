@@ -40,6 +40,7 @@ export const transformGraphqlToCytoscape = (
 
     for (const node of rawNodes) {
       for (const link of node.links) {
+        if (node.url === link.url) continue;
         elements.push({
           data: {
             id: `edge-${node.url}-${link.url}`,
