@@ -52,11 +52,18 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
           },
         },
       ],
+      // layout: {
+      //   name: "dagre",
+      //   rankDir: "LR",
+      //   nodeSep: 60,
+      //   rankSep: 100,
+      //   fit: true,
+      //   padding: 30,
+      // } as any,¨
       layout: {
-        name: "dagre",
-        rankDir: "LR",
-        nodeSep: 60,
-        rankSep: 100,
+        name: "grid",
+        rows: 10,
+        cols: 10,
         fit: true,
         padding: 30,
       } as any,

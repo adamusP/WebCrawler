@@ -82,6 +82,8 @@ export const transformGraphqlToCytoscape = (
       for (const link of node.links) {
         const targetDomain = getDomainName(link.url);
 
+        if (sourceDomain === targetDomain) continue;
+
         const edgeId = `edge-${sourceDomain}-${targetDomain}`;
 
         if (!createdEdges.has(edgeId)) {
@@ -100,5 +102,5 @@ export const transformGraphqlToCytoscape = (
     return [...Array.from(domainNodesMap.values()), ...elements];
   }
 
-  return elements;
+  return [];
 };
