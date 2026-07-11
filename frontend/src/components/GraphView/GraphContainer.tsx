@@ -1,14 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@apollo/client/react";
 import { GET_GRAPH_NODES } from "../../graphql/queries";
 import { GraphView } from "./Graphview";
-import { transformGraphqlToCytoscape } from "../../utils/graphTransform";
+import { transformGraphqlToCytoscape, GraphViewMode } from "../../utils/graphTransform";
+import styles from "./GraphContainer.module.css";
 
 interface GraphContainerProps {
   selectedWebPages: string[];
 }
 
 export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages }) => {
+  const [viewMode, setViewMode] = useState<GraphViewMode>("website");
   const { loading, error, data } = useQuery(GET_GRAPH_NODES, {
     variables: {
       webPages: selectedWebPages.length > 0 ? selectedWebPages : null,
@@ -18,8 +20,8 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
 
   const transformedElements = useMemo(() => {
     const rawNodes = data?.nodes ?? [];
-    return transformGraphqlToCytoscape(rawNodes);
-  }, [data]);
+    return transformGraphqlToCytoscape(rawNodes, viewMode);
+  }, [data, viewMode]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -28,6 +30,23 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
         <p>
           Received <strong>{data?.nodes?.length || 0}</strong> main pages.
         </p>
+
+        <div className={styles.viewModeContainer}>
+          <button
+            type="button"
+            className={`${styles.modeButton} ${viewMode === "website" ? styles.activeMode : ""}`}
+            onClick={() => setViewMode("website")}
+          >
+            Website View
+          </button>
+          <button
+            type="button"
+            className={`${styles.modeButton} ${viewMode === "domain" ? styles.activeMode : ""}`}
+            onClick={() => setViewMode("domain")}
+          >
+            Domain View
+          </button>
+        </div>
       </div>
 
       <div style={{ flex: 1, minHeight: "500px" }}>
