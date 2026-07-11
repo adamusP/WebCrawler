@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import cytoscape from "cytoscape";
 import dagre from "cytoscape-dagre";
+import { NodeDetailModal, SelectedNodeData } from "./NodeDetailModal";
 
 interface GraphViewProps {
   elements: cytoscape.ElementDefinition[];
@@ -8,6 +9,10 @@ interface GraphViewProps {
 
 export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const cyRef = useRef<cytoscape.Core | null>(null);
+
+  const [selectedNode, setSelectedNode] = useState<SelectedNodeData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (!containerRef.current || elements.length === 0) return;
@@ -69,8 +74,29 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
       } as any,
     });
 
+    cyRef.current = cy;
+
+    cy.on("dblclick", "node", (event) => {
+      const clickedNode = event.target;
+      const nodeData = clickedNode.data();
+
+      setSelectedNode({
+        id: nodeData.id,
+        label: nodeData.label,
+        title: nodeData.title,
+        crawlTime: nodeData.crawlTime,
+        owner: nodeData.owner,
+        isBoundary: nodeData.isBoundary,
+      });
+
+      setIsModalOpen(true);
+    });
+
     return () => {
-      cy.destroy();
+      if (cyRef.current) {
+        cyRef.current.off("dblclick", "node");
+        cyRef.current.destroy();
+      }
     };
   }, [elements]);
 
@@ -86,6 +112,17 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
           backgroundColor: "#fafafa",
         }}
       />
+
+      {isModalOpen && selectedNode && (
+        <NodeDetailModal
+          isOpen={isModalOpen}
+          nodeData={selectedNode}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedNode(null);
+          }}
+        />
+      )}
     </div>
   );
 };
