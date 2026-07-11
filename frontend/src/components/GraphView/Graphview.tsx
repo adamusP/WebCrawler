@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
+import dagre from "cytoscape-dagre";
 
 interface GraphViewProps {
   elements: cytoscape.ElementDefinition[];
@@ -10,6 +11,8 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
 
   useEffect(() => {
     if (!containerRef.current || elements.length === 0) return;
+
+    cytoscape.use(dagre);
 
     const cy = cytoscape({
       container: containerRef.current,
@@ -50,9 +53,13 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
         },
       ],
       layout: {
-        name: "grid",
-        rows: 2,
-      },
+        name: "dagre",
+        rankDir: "LR",
+        nodeSep: 60,
+        rankSep: 100,
+        fit: true,
+        padding: 30,
+      } as any,
     });
 
     return () => {
