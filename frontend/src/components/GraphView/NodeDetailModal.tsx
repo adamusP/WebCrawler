@@ -18,6 +18,32 @@ interface NodeDetailModalProps {
 
 export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({ isOpen, onClose, nodeData }) => {
   if (!isOpen || !nodeData) return null;
+  const [triggeringId, setTriggeringId] = useState<string | null>(null);
+
+  const handleStartExecution = async (websiteRecordId: string) => {
+    setTriggeringId(websiteRecordId);
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/websites/${websiteRecordId}/executions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error(`Server responded with error status: ${response.status}`);
+      } else {
+        console.log(`Execution started successfully for website: ${websiteRecordId}`);
+      }
+    } catch (error) {
+      console.error("Failed to start execution:", error);
+    } finally {
+      setTriggeringId(null);
+    }
+  };
 
   return (
     <div className={styles.modalBackdrop}>
@@ -40,25 +66,44 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({ isOpen, onClos
           )}
         </p>
 
-        <p>
-          <strong>Crawl Time:</strong> {nodeData.crawlTime ?? "N/A"}
-        </p>
+        {!nodeData.isBoundary && (
+          <p>
+            <strong>Crawl Time:</strong> {nodeData.crawlTime ?? "N/A"}
+          </p>
+        )}
 
-        <div className={styles.ownersSection}>
-          <h3>Owners:</h3>
-          {nodeData.owner.length === 0 ? (
-            <p>No owners</p>
-          ) : (
-            <div className={styles.ownersGrid}>
-              {nodeData.owner.map((wp) => (
-                <div key={wp.identifier} className={styles.ownerCard}>
-                  <strong>{wp.label}</strong>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {!nodeData.isBoundary && (
+          <div className={styles.ownersSection}>
+            <h3>Belongs to Website Records:</h3>
+            {nodeData.owner.length === 0 ? (
+              <p>No owners found for this node.</p>
+            ) : (
+              <div className={styles.ownersGrid}>
+                {nodeData.owner.map((wp) => (
+                  <div key={wp.identifier} className={styles.ownerCard}>
+                    <div className={styles.ownerInfo}>
+                      <strong>{wp.label}</strong>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.startButton}
+                      onClick={() => handleStartExecution(wp.identifier)}
+                      disabled={triggeringId !== null}
+                    >
+                      {triggeringId === wp.identifier ? "Starting..." : "Run Now"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
+        {nodeData.isBoundary && (
+          <div className={styles.boundarySection}>
+            <h3>Create Website Record</h3>
+          </div>
+        )}
         <button className={styles.closeButton} onClick={onClose}>
           Close
         </button>

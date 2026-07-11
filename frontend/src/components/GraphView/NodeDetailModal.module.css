@@ -70,7 +70,8 @@
   border: 1px solid #ceead6;
 }
 
-.ownersSection {
+.ownersSection,
+.boundarySection {
   margin-top: 20px;
   background-color: #f8f9fa;
   padding: 16px;
@@ -78,7 +79,8 @@
   border: 1px solid #e9ecef;
 }
 
-.ownersSection h3 {
+.ownersSection h3,
+.boundarySection h3 {
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 1rem;
@@ -93,11 +95,47 @@
 
 .ownerCard {
   background-color: #ffffff;
-  padding: 8px 12px;
+  padding: 12px;
   border-radius: 6px;
   border: 1px solid #dee2e6;
-  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ownerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ownerId {
+  font-size: 0.75rem;
+  color: #868e96;
+}
+
+.startButton {
+  background-color: #28a745;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.startButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.startButton:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
 }
 
 .closeButton {
