@@ -29,13 +29,24 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const [viewMode, setViewMode] = useState<GraphViewMode>("website");
 
   const callInterval = isLiveMode ? DEFAULT_POLL_INTERVAL : 0;
-  const { loading, error, data } = useQuery(GET_GRAPH_NODES, {
+  const { loading, error, data, refetch } = useQuery(GET_GRAPH_NODES, {
     variables: {
       webPages: selectedWebPages.length > 0 ? selectedWebPages : null,
     },
     pollInterval: callInterval,
     fetchPolicy: "network-only",
   });
+
+  const handleLiveModeToggle = async (enableLive: boolean) => {
+    onLiveModeChange(enableLive);
+    if (enableLive) {
+      try {
+        await refetch();
+      } catch (err) {
+        console.error("Failed to refetch graph data on live mode activation:", err);
+      }
+    }
+  };
 
   const transformedElements = useMemo(() => {
     const rawNodes = data?.nodes ?? [];
@@ -70,14 +81,14 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
           <button
             type="button"
             className={`${styles.modeButton} ${isLiveMode ? styles.activeMode : ""}`}
-            onClick={() => onLiveModeChange(true)}
+            onClick={() => handleLiveModeToggle(true)}
           >
             Live Mode
           </button>
           <button
             type="button"
             className={`${styles.modeButton} ${!isLiveMode ? styles.activeMode : ""}`}
-            onClick={() => onLiveModeChange(false)}
+            onClick={() => handleLiveModeToggle(false)}
           >
             Static Mode
           </button>
