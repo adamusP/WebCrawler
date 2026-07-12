@@ -1,0 +1,290 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.addButton {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--color-bg-secondary);
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  outline: none;
+  background-color: var(--color-bg-main);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.searchInput:focus,
+.sortSelect:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.15);
+}
+
+.sortSelect {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  outline: none;
+  background-color: var(--color-bg-main);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+  }
+  .controls > div {
+    grid-column: span 3;
+    display: flex;
+    gap: 0.75rem;
+  }
+}
+
+.card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-bg-main);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  align-items: flex-start;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card.active {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 2px rgba(var(--color-primary-rgb), 0.2),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-bg-secondary);
+}
+
+.card:hover:not(.active) {
+  border-color: var(--color-border);
+  transform: translateY(-1px);
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.editButton {
+  color: var(--color-primary);
+}
+
+.editButton:hover {
+  background-color: var(--color-primary-light);
+}
+
+.deleteButton {
+  color: var(--color-danger);
+}
+
+.deleteButton:hover {
+  background-color: var(--color-danger-bg);
+}
+
+.label {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.url a {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.url a:hover {
+  text-decoration: underline;
+}
+
+.urlText {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  word-break: break-all;
+}
+
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.statusSuccess {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+.statusFailed {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+.statusRunning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+.statusNone {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-muted);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tag {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-bg-tertiary);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.limitSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.limitSelect {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  outline: none;
+  cursor: pointer;
+  background-color: var(--color-bg-main);
+}
+
+.pageButton {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-main);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 0.85rem;
+}

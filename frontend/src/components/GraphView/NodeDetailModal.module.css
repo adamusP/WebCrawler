@@ -1,0 +1,194 @@
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--color-bg-backdrop);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-main);
+  padding: 24px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease-out;
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  color: var(--color-text-main);
+  border-bottom: 1px solid var(--color-border-light);
+  padding-bottom: 12px;
+}
+
+.modalContent p {
+  margin: 12px 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modalContent a {
+  color: var(--color-primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.modalContent a:hover {
+  text-decoration: underline;
+}
+
+.badgeBoundary,
+.badgeCrawled {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badgeBoundary {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
+}
+
+.badgeCrawled {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+}
+
+.ownersSection,
+.boundarySection {
+  margin-top: 20px;
+  background-color: var(--color-bg-secondary);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+}
+
+.ownersSection h3,
+.boundarySection h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.ownersGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ownerCard {
+  background-color: var(--color-bg-main);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ownerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ownerId {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.startButton {
+  background-color: var(--color-success);
+  color: var(--color-text-inverse);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.startButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.startButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionButton {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.closeButton {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--color-text-muted);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.closeButton:hover {
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
