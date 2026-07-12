@@ -4,16 +4,29 @@ import { GET_GRAPH_NODES } from "../../graphql/queries";
 import { GraphView } from "./Graphview";
 import { transformGraphqlToCytoscape, GraphViewMode } from "../../utils/graphTransform";
 import styles from "./GraphContainer.module.css";
+import { WebEntryFormData } from "../WebEntries/WebEntryModal";
 
 interface GraphContainerProps {
   selectedWebPages: string[];
+  isLiveMode: boolean;
+  onLiveModeChange: (isLive: boolean) => void;
+  onOpenModal: (
+    initialData: Partial<WebEntryFormData>,
+    isEdit: boolean,
+    websiteId?: string,
+    autoExecuteAndLive?: boolean
+  ) => void;
 }
 
 const DEFAULT_POLL_INTERVAL = 5000;
 
-export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages }) => {
+export const GraphContainer: React.FC<GraphContainerProps> = ({
+  selectedWebPages,
+  isLiveMode,
+  onLiveModeChange,
+  onOpenModal,
+}) => {
   const [viewMode, setViewMode] = useState<GraphViewMode>("website");
-  const [isLiveMode, setIsLiveMode] = useState<boolean>(false);
 
   const callInterval = isLiveMode ? DEFAULT_POLL_INTERVAL : 0;
   const { loading, error, data } = useQuery(GET_GRAPH_NODES, {
@@ -57,14 +70,14 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
           <button
             type="button"
             className={`${styles.modeButton} ${isLiveMode ? styles.activeMode : ""}`}
-            onClick={() => setIsLiveMode(true)}
+            onClick={() => onLiveModeChange(true)}
           >
             Live Mode
           </button>
           <button
             type="button"
             className={`${styles.modeButton} ${!isLiveMode ? styles.activeMode : ""}`}
-            onClick={() => setIsLiveMode(false)}
+            onClick={() => onLiveModeChange(false)}
           >
             Static Mode
           </button>
@@ -72,7 +85,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({ selectedWebPages
       </div>
 
       <div style={{ flex: 1, minHeight: "500px" }}>
-        <GraphView elements={transformedElements} />
+        <GraphView elements={transformedElements} onOpenModal={onOpenModal} />
       </div>
     </div>
   );

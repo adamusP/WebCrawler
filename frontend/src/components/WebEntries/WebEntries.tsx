@@ -10,6 +10,12 @@ interface WebEntriesListProps {
   onSelectWebsite: (id: string | null) => void;
   activeSelection: string[];
   onSelectionChange: (ids: string[]) => void;
+  onOpenModal: (
+    initialData: Partial<WebEntryFormData>,
+    isEdit: boolean,
+    websiteId?: string
+  ) => void;
+  refreshTrigger: number;
 }
 
 export default function WebEntriesList({
@@ -17,6 +23,8 @@ export default function WebEntriesList({
   onSelectWebsite,
   activeSelection,
   onSelectionChange,
+  onOpenModal,
+  refreshTrigger,
 }: WebEntriesListProps) {
   const [websites, setWebsites] = useState<WebsiteRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,10 +33,6 @@ export default function WebEntriesList({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"url" | "lastCrawledAt">("url");
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [editingWebsite, setEditingWebsite] = useState<WebsiteRecord | null>(null);
 
   const fetchWebsites = async () => {
     try {
@@ -55,49 +59,7 @@ export default function WebEntriesList({
 
   useEffect(() => {
     fetchWebsites();
-  }, []);
-
-  const handleSaveWebsite = async (formData: WebEntryFormData) => {
-    try {
-      const tagsArray = formData.tagsString
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
-
-      const payload = {
-        label: formData.label,
-        url: formData.url,
-        boundaryRegexp: formData.boundaryRegexp,
-        periodicity: formData.periodicity,
-        active: formData.active,
-        tags: tagsArray,
-      };
-
-      const isEdit = !!editingWebsite;
-      const url = isEdit
-        ? `http://localhost:3000/api/websites/${editingWebsite.id}`
-        : "http://localhost:3000/api/websites";
-
-      const response = await fetch(url, {
-        method: isEdit ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save the record.");
-      }
-
-      setIsModalOpen(false);
-      setEditingWebsite(null);
-      fetchWebsites();
-    } catch (err) {
-      console.error("Failed to save the record:", err);
-      alert("Failed to save the record. Please check the console for more details.");
-    }
-  };
+  }, [refreshTrigger]);
 
   const handleDeleteWebsite = async (id: string, label: string) => {
     if (!window.confirm(`Are you sure you want to delete "${label}"?`)) {
@@ -118,23 +80,21 @@ export default function WebEntriesList({
     }
   };
 
-  const openEditModal = (item: WebsiteRecord) => {
-    setEditingWebsite(item);
-    setIsModalOpen(true);
+  const handleCreateClick = () => {
+    onOpenModal({}, false);
   };
 
-  const modalInitialData = useMemo(() => {
-    if (!editingWebsite) return null;
-    return {
-      label: editingWebsite.label,
-      url: editingWebsite.url,
-      boundaryRegexp: editingWebsite.boundaryRegexp,
-      periodicity: editingWebsite.periodicity as "MINUTE" | "HOUR" | "DAY" | "NONE",
-      active: editingWebsite.active,
-      tagsString: editingWebsite.tags.join(", "),
+  const handleEditClick = (website: WebsiteRecord) => {
+    const initialFormData: Partial<WebEntryFormData> = {
+      label: website.label,
+      url: website.url,
+      boundaryRegexp: website.boundaryRegexp,
+      periodicity: website.periodicity,
+      active: website.active,
+      tagsString: website.tags ? website.tags.join(", ") : "",
     };
-  }, [editingWebsite]);
-
+    onOpenModal(initialFormData, true, website.id);
+  };
   const resultItems = useMemo(() => {
     let items = websites;
 
@@ -206,8 +166,7 @@ export default function WebEntriesList({
         type="button"
         className={styles.addButton}
         onClick={() => {
-          setEditingWebsite(null);
-          setIsModalOpen(true);
+          handleCreateClick();
         }}
       >
         <span>+ Add New Record</span>
@@ -261,7 +220,7 @@ export default function WebEntriesList({
                     <button
                       type="button"
                       title="Edit Record"
-                      onClick={() => openEditModal(item)}
+                      onClick={() => handleEditClick(item)}
                       className={`${styles.actionButton} ${styles.editButton}`}
                     >
                       E
@@ -323,16 +282,6 @@ export default function WebEntriesList({
           Next
         </button>
       </div>
-      {isModalOpen && (
-        <WebEntryModal
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingWebsite(null);
-          }}
-          onSave={handleSaveWebsite}
-          initialData={modalInitialData}
-        />
-      )}
     </div>
   );
 }

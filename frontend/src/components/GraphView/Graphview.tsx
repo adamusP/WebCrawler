@@ -2,12 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import cytoscape from "cytoscape";
 import dagre from "cytoscape-dagre";
 import { NodeDetailModal, SelectedNodeData } from "./NodeDetailModal";
+import { WebEntryFormData } from "../WebEntries/WebEntryModal";
 
 interface GraphViewProps {
   elements: cytoscape.ElementDefinition[];
+  onOpenModal: (
+    initialData: Partial<WebEntryFormData>,
+    isEdit: boolean,
+    websiteId?: string,
+    autoExecuteAndLive?: boolean
+  ) => void;
 }
 
-export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
+export const GraphView: React.FC<GraphViewProps> = ({ elements, onOpenModal }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
 
@@ -121,6 +128,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements }) => {
             setIsModalOpen(false);
             setSelectedNode(null);
           }}
+          onOpenModal={onOpenModal}
         />
       )}
     </div>

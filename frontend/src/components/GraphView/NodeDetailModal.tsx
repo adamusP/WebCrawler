@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./NodeDetailModal.module.css";
+import { WebEntryFormData } from "../WebEntries/WebEntryModal";
 
 export interface SelectedNodeData {
   id: string;
@@ -14,9 +15,20 @@ interface NodeDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   nodeData: SelectedNodeData | null;
+  onOpenModal: (
+    initialData: Partial<WebEntryFormData>,
+    isEdit: boolean,
+    websiteId?: string,
+    autoExecuteAndLive?: boolean
+  ) => void;
 }
 
-export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({ isOpen, onClose, nodeData }) => {
+export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({
+  isOpen,
+  onClose,
+  nodeData,
+  onOpenModal,
+}) => {
   if (!isOpen || !nodeData) return null;
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
 
@@ -43,6 +55,17 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({ isOpen, onClos
     } finally {
       setTriggeringId(null);
     }
+  };
+
+  const handleCreateAndExecuteClick = () => {
+    const prefilledData: Partial<WebEntryFormData> = {
+      url: nodeData.id,
+      label: `Seed for ${new URL(nodeData.id).hostname}`,
+    };
+
+    onClose();
+
+    onOpenModal(prefilledData, false, undefined, true);
   };
 
   return (
@@ -101,7 +124,12 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({ isOpen, onClos
 
         {nodeData.isBoundary && (
           <div className={styles.boundarySection}>
-            <h3>Create Website Record</h3>
+            <p className={styles.warningText}>
+              This node has not been crawled due to Boundary RegExp limitations.
+            </p>
+            <button className={styles.actionButton} onClick={handleCreateAndExecuteClick}>
+              Create new Website Record And Execute
+            </button>
           </div>
         )}
         <button className={styles.closeButton} onClick={onClose}>

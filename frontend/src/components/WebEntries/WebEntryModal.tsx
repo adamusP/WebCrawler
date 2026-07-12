@@ -14,7 +14,7 @@ export interface WebEntryFormData {
 interface WebEntryModalProps {
   onClose: () => void;
   onSave: (data: WebEntryFormData) => void;
-  initialData?: WebEntryFormData | null;
+  initialData: Partial<WebEntryFormData> | null;
 }
 
 export default function WebEntryModal({ onClose, onSave, initialData }: WebEntryModalProps) {
