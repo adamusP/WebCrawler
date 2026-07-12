@@ -22,8 +22,8 @@
 }
 
 .addButton {
-  background-color: #3b82f6;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
   border: none;
   padding: 0.5rem 1rem;
   margin-bottom: 1rem;
@@ -36,7 +36,7 @@
   flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  background-color: var(--color-background-light, #f8fafc);
+  background-color: var(--color-bg-secondary);
   padding: 1rem;
   border-radius: 6px;
   border: 1px solid var(--color-border);
@@ -50,7 +50,7 @@
   border-radius: 4px;
   font-size: 0.95rem;
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--color-bg-main);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -59,7 +59,7 @@
 .searchInput:focus,
 .sortSelect:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 59, 130, 246), 0.15);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.15);
 }
 
 .sortSelect {
@@ -69,7 +69,7 @@
   border-radius: 4px;
   font-size: 0.95rem;
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--color-bg-main);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -108,15 +108,15 @@
 }
 
 .card.active {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
   box-shadow:
-    0 0 0 2px rgba(59, 130, 246, 0.2),
+    0 0 0 2px rgba(var(--color-primary-rgb), 0.2),
     0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  background-color: #f8fafc;
+  background-color: var(--color-bg-secondary);
 }
 
 .card:hover:not(.active) {
-  border-color: #cbd5e1;
+  border-color: var(--color-border);
   transform: translateY(-1px);
 }
 
@@ -165,14 +165,14 @@
 }
 
 .deleteButton:hover {
-  background-color: var(--color-danger-light);
+  background-color: var(--color-danger-bg);
 }
 
 .label {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text-main);
 }
 
 .url {
@@ -184,7 +184,7 @@
 .url a {
   display: inline-flex;
   align-items: center;
-  color: #0066cc;
+  color: var(--color-primary);
   text-decoration: none;
 }
 
@@ -195,7 +195,7 @@
 .urlText {
   margin: 0;
   font-size: 14px;
-  color: #333333;
+  color: var(--color-text-secondary);
   word-break: break-all;
 }
 
@@ -208,20 +208,20 @@
 }
 
 .statusSuccess {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
 }
 .statusFailed {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 .statusRunning {
-  background-color: #fef9c3;
-  color: #ca8a04;
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 .statusNone {
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-muted);
 }
 
 .tags {
@@ -231,8 +231,8 @@
 }
 
 .tag {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
   font-size: 0.75rem;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
@@ -243,9 +243,9 @@
   justify-content: space-between;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-bg-tertiary);
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .pagination {
@@ -266,9 +266,10 @@
 .limitSelect {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   outline: none;
   cursor: pointer;
+  background-color: var(--color-bg-main);
 }
 
 .pageButton {

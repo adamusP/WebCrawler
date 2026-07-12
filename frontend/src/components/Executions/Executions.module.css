@@ -1,6 +1,6 @@
 .container {
   padding: 1rem;
-  background-color: #ffffff;
+  background-color: var(--color-bg-main);
   border-radius: 8px;
 }
 
@@ -17,8 +17,8 @@
 }
 
 .refreshButton {
-  background-color: #3b82f6;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -26,8 +26,8 @@
 }
 
 .startButton {
-  background-color: #3b82f6;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -40,8 +40,8 @@
 }
 
 .backButton {
-  background-color: #64748b;
-  color: white;
+  background-color: var(--color-text-muted);
+  color: var(--color-text-inverse);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -58,20 +58,20 @@
 .table th {
   text-align: left;
   padding: 12px 15px;
-  background-color: #f8fafc;
-  color: #64748b;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
   font-weight: 600;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border-light);
 }
 
 .table td {
   padding: 12px 15px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #334155;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
 }
 
 .table tr:hover {
-  background-color: #f1f5f9;
+  background-color: var(--color-bg-tertiary);
 }
 
 .status {
@@ -83,20 +83,20 @@
 }
 
 .succeeded {
-  color: #166534;
-  background: #dcfce7;
+  color: var(--color-success);
+  background: var(--color-success-bg);
 }
 .failed {
-  color: #991b1b;
-  background: #fee2e2;
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
 }
 .running {
-  color: #1e40af;
-  background: #dbeafe;
+  color: var(--color-running);
+  background: var(--color-running-bg);
 }
 .queued {
-  color: #b04f17;
-  background: #fef3c7;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
 }
 
 .pagination {
@@ -106,10 +106,10 @@
   gap: 1rem;
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-light);
   font-family: inherit;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--color-text-secondary);
 }
 
 .limitSelector {
@@ -120,53 +120,53 @@
 }
 
 .limitSelector label {
-  color: #555;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .limitSelect {
   padding: 0.4rem 0.6rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background-color: #fff;
+  background-color: var(--color-bg-main);
   cursor: pointer;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--color-text-main);
   transition: border-color 0.2s ease;
 }
 
 .limitSelect:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
 }
 
 .pagination button {
   padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background-color: #fff;
-  color: #374151;
+  background-color: var(--color-bg-main);
+  color: var(--color-text-secondary);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .pagination button:hover:not(:disabled) {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
-  color: #111827;
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-border-focus);
+  color: var(--color-text-main);
 }
 
 .pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: #f9fafb;
+  background-color: var(--color-bg-secondary);
 }
 
 .pagination span {
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-main);
   min-width: 60px;
   text-align: center;
 }

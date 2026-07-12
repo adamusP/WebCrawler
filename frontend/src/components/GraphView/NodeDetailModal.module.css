@@ -4,7 +4,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-bg-backdrop);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -14,8 +14,8 @@
 }
 
 .modalContent {
-  background-color: #ffffff;
-  color: #333333;
+  background-color: var(--color-bg-main);
+  color: var(--color-text-main);
   padding: 24px;
   border-radius: 12px;
   width: 100%;
@@ -28,8 +28,8 @@
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 1.5rem;
-  color: #111111;
-  border-bottom: 1px solid #eeeeee;
+  color: var(--color-text-main);
+  border-bottom: 1px solid var(--color-border-light);
   padding-bottom: 12px;
 }
 
@@ -40,7 +40,7 @@
 }
 
 .modalContent a {
-  color: #0066cc;
+  color: var(--color-primary);
   text-decoration: none;
   word-break: break-all;
 }
@@ -59,24 +59,24 @@
 }
 
 .badgeBoundary {
-  background-color: #ffebe9;
-  color: #ea4a3a;
-  border: 1px solid #ffc8c4;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
 }
 
 .badgeCrawled {
-  background-color: #e6f4ea;
-  color: #137333;
-  border: 1px solid #ceead6;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
 }
 
 .ownersSection,
 .boundarySection {
   margin-top: 20px;
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-secondary);
   padding: 16px;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--color-border-light);
 }
 
 .ownersSection h3,
@@ -84,7 +84,7 @@
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 1rem;
-  color: #495057;
+  color: var(--color-text-secondary);
 }
 
 .ownersGrid {
@@ -94,10 +94,10 @@
 }
 
 .ownerCard {
-  background-color: #ffffff;
+  background-color: var(--color-bg-main);
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--color-border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -113,12 +113,12 @@
 
 .ownerId {
   font-size: 0.75rem;
-  color: #868e96;
+  color: var(--color-text-muted);
 }
 
 .startButton {
-  background-color: #28a745;
-  color: #ffffff;
+  background-color: var(--color-success);
+  color: var(--color-text-inverse);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -126,21 +126,21 @@
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .startButton:hover:not(:disabled) {
-  background-color: #218838;
+  opacity: 0.9;
 }
 
 .startButton:disabled {
-  background-color: #a5d6a7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .actionButton {
-  background-color: #007bff;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -149,24 +149,28 @@
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.15s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--color-primary-hover);
 }
 
 .closeButton {
   margin-top: 20px;
   width: 100%;
   padding: 10px;
-  background-color: #6c757d;
-  color: #ffffff;
+  background-color: var(--color-text-muted);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .closeButton:hover {
-  background-color: #5a6268;
+  opacity: 0.9;
 }
 
 @keyframes fadeIn {

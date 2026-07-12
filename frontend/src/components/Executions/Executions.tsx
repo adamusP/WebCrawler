@@ -153,7 +153,9 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
                 <tr key={ex.id}>
                   <td>{ex.websiteRecordLabel}</td>
                   <td>
-                    <span className={styles[ex.status.toLowerCase()]}>{ex.status}</span>
+                    <span className={`${styles.status} ${styles[ex.status.toLowerCase()]}`}>
+                      {ex.status}
+                    </span>
                   </td>
                   <td>{ex.startedAt ? ex.startedAt.toLocaleString() : "Not started yet"}</td>
                   <td>{ex.endedAt ? ex.endedAt.toLocaleString() : "Did not end yet"}</td>
