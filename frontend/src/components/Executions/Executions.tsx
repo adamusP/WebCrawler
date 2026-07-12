@@ -8,11 +8,13 @@ interface ExecutionsListProps {
 }
 
 const ITEMS_PER_PAGE = 8;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsListProps) {
   const [executions, setExecutions] = useState<Execution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTriggering, setIsTriggering] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -52,6 +54,7 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
       });
 
       if (response.ok) {
+        await delay(800);
         await fetchExecutions();
         setCurrentPage(1);
       } else {
@@ -62,6 +65,10 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
     } finally {
       setIsTriggering(false);
     }
+  };
+
+  const handleManualRefresh = () => {
+    fetchExecutions();
   };
 
   const totalPages = Math.ceil(executions.length / ITEMS_PER_PAGE) || 1;
@@ -81,6 +88,15 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
         <h2>{websiteId ? "Website Executions" : "All Executions"}</h2>
 
         <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.refreshButton}
+            onClick={handleManualRefresh}
+            disabled={isRefreshing || isTriggering}
+          >
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </button>
+
           {websiteId && (
             <>
               <button

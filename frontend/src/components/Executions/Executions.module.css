@@ -16,6 +16,15 @@
   gap: 0.5rem;
 }
 
+.refreshButton {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .startButton {
   background-color: #3b82f6;
   color: white;
