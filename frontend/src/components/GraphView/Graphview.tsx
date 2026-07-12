@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import cytoscape from "cytoscape";
 import dagre from "cytoscape-dagre";
+import fcose from "cytoscape-fcose";
 import { NodeDetailModal, SelectedNodeData } from "./NodeDetailModal";
 import { WebEntryFormData } from "../WebEntries/WebEntryModal";
 
@@ -21,24 +22,54 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements, onOpenModal }) =
   const [selectedNode, setSelectedNode] = useState<SelectedNodeData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [layoutType, setLayoutType] = useState<string>("dagre");
+
+  const getLayoutConfig = (type: string) => {
+    const basePadding = 30;
+
+    switch (type) {
+      case "grid":
+        return {
+          name: "grid",
+          fit: true,
+          padding: basePadding,
+        };
+      case "concentric":
+        return {
+          name: "concentric",
+          fit: true,
+          padding: basePadding,
+        };
+      case "fcose":
+        return {
+          name: "fcose",
+          quality: "proof",
+          randomize: true,
+          animate: false,
+          nodeSeparation: 150,
+          idealEdgeLength: 200,
+          nodeRepulsion: 10000,
+          fit: true,
+          padding: basePadding,
+        };
+      case "dagre":
+      default:
+        return {
+          name: "dagre",
+          rankDir: "LR",
+          nodeSep: 60,
+          rankSep: 100,
+          fit: true,
+          padding: basePadding,
+        };
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current || elements.length === 0) return;
 
     cytoscape.use(dagre);
-    const layoutConfig = {
-      name: "dagre",
-      rankDir: "LR",
-      nodeSep: 60,
-      rankSep: 100,
-      fit: true,
-      padding: 30,
-      // name: "grid",
-      // rows: 10,
-      // cols: 10,
-      // fit: true,
-      // padding: 30,
-    };
+    cytoscape.use(fcose);
 
     const cy = cytoscape({
       container: containerRef.current,
@@ -107,53 +138,84 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements, onOpenModal }) =
       setIsModalOpen(true);
     });
 
-    const instanceLayout = cy.layout(layoutConfig as any);
+    const instanceLayout = cy.layout(getLayoutConfig(layoutType) as any);
     instanceLayout.run();
 
     return () => {
       if (cyRef.current) {
-        cyRef.current.off("layoutstart");
-        cyRef.current.off("layoutstop");
-        cyRef.current.off("dblclick", "node");
+        cyRef.current.removeAllListeners();
         cyRef.current.destroy();
       }
     };
   }, [elements]);
 
+  useEffect(() => {
+    if (cyRef.current) {
+      const newLayout = cyRef.current.layout(getLayoutConfig(layoutType) as any);
+      newLayout.run();
+    }
+  }, [layoutType]);
+
   return (
-    <div style={{ padding: "10px", height: "100%", position: "relative" }}>
-      {isLoading && (
-        <div
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "10px" }}>
+      <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "12px" }}>
+        <label htmlFor="layoutSelect" style={{ fontWeight: 600, color: "#333" }}>
+          View Mode:
+        </label>
+        <select
+          id="layoutSelect"
+          value={layoutType}
+          onChange={(e) => setLayoutType(e.target.value)}
           style={{
-            position: "absolute",
-            top: "10px",
-            left: "10px",
-            right: "10px",
-            bottom: "10px",
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 10,
-            borderRadius: "8px",
-            fontWeight: "bold",
-            color: "#555",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            border: "1px solid #d9d9d9",
+            backgroundColor: "#fff",
+            cursor: "pointer",
+            outline: "none",
           }}
         >
-          Rendering crawler graph...
-        </div>
-      )}
+          <option value="dagre">Dagre Tree</option>
+          <option value="grid">Grid</option>
+          <option value="fcose">Fcose</option>
+          <option value="concentric">Concentric</option>
+        </select>
+      </div>
 
-      <div
-        ref={containerRef}
-        style={{
-          width: "100%",
-          height: "500px",
-          border: "1px solid #e0e0e0",
-          borderRadius: "8px",
-          backgroundColor: "#fafafa",
-        }}
-      />
+      <div style={{ position: "relative", flexGrow: 1, minHeight: "500px" }}>
+        {isLoading && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(255, 255, 255, 0.7)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 10,
+              borderRadius: "8px",
+              fontWeight: "bold",
+              color: "#555",
+            }}
+          >
+            Rendering {layoutType} layout...
+          </div>
+        )}
+
+        <div
+          ref={containerRef}
+          style={{
+            width: "100%",
+            height: "100%",
+            border: "1px solid #e0e0e0",
+            borderRadius: "8px",
+            backgroundColor: "#fafafa",
+          }}
+        />
+      </div>
 
       {isModalOpen && selectedNode && (
         <NodeDetailModal
