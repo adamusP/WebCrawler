@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import styles from "./WebEntries.module.css";
 import { WebsiteRecord, WebsiteRecordDTO, mapWebsiteRecord } from "../../components/types/website";
 import WebEntryModal, { WebEntryFormData } from "./WebEntryModal";
+import { Pencil, Trash2 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -223,7 +224,7 @@ export default function WebEntriesList({
                       onClick={() => handleEditClick(item)}
                       className={`${styles.actionButton} ${styles.editButton}`}
                     >
-                      E
+                      <Pencil size={16} />
                     </button>
 
                     <button
@@ -232,7 +233,7 @@ export default function WebEntriesList({
                       onClick={() => handleDeleteWebsite(item.id, item.label)}
                       className={`${styles.actionButton} ${styles.deleteButton}`}
                     >
-                      D
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
