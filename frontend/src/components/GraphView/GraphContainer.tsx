@@ -95,7 +95,21 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: "500px" }}>
+      <div style={{ flex: 1, minHeight: "500px", position: "relative" }}>
+        {error && (
+          <div className={styles.errorOverlay}>
+            <p>Error loading crawler graph data: {error.message}</p>
+            <button type="button" onClick={() => refetch()}>
+              Retry
+            </button>
+          </div>
+        )}
+        {loading && !data && (
+          <div className={styles.loadingOverlay}>
+            <p>Loading crawler network graph...</p>
+          </div>
+        )}
+        {loading && data && <div className={styles.backgroundLoadingIndicator}>Updating...</div>}
         <GraphView elements={transformedElements} onOpenModal={onOpenModal} />
       </div>
     </div>
