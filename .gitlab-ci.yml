@@ -1,0 +1,15 @@
+verify:
+  stage: build
+  image: node:24-alpine
+
+  before_script:
+    - npm ci
+    - npm --prefix backend ci
+    - npm --prefix crawler ci
+    - npm --prefix graphql ci
+    - npm --prefix frontend ci
+
+  script:
+    - npm run lint
+    - npm run format:check
+    - npm run build
