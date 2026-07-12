@@ -53,7 +53,9 @@ const server = new ApolloServer({ typeDefs: GraphqlTypeDefs, resolvers });
 const port = Number(process.env.PORT ?? 4000);
 
 await server.start();
-app.use("/graphql", cors<cors.CorsRequest>(), express.json(), expressMiddleware(server));
+app.use(cors<cors.CorsRequest>());
+app.use(express.json());
+app.use("/graphql", expressMiddleware(server));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "graphql" });
