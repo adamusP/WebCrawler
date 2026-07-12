@@ -4,6 +4,8 @@ import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
 import { NodeDetailModal, SelectedNodeData } from "./NodeDetailModal";
 import { WebEntryFormData } from "../WebEntries/WebEntryModal";
+import styles from "./GraphView.module.css";
+import { cytoscapeStyles } from "./GraphStyles";
 
 interface GraphViewProps {
   elements: cytoscape.ElementDefinition[];
@@ -74,41 +76,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements, onOpenModal }) =
     const cy = cytoscape({
       container: containerRef.current,
       elements: elements,
-      style: [
-        {
-          selector: "node",
-          style: {
-            "background-color": "#0070f3",
-            label: "data(label)",
-            color: "#333",
-            "font-size": "12px",
-            "text-valign": "center",
-            "text-halign": "right",
-            "text-margin-x": 8,
-            width: "30px",
-            height: "30px",
-          },
-        },
-        {
-          selector: "node[?isBoundary]",
-          style: {
-            "background-color": "#ff4d4f",
-            "border-width": "2px",
-            "border-color": "#cf1322",
-            shape: "rectangle",
-          },
-        },
-        {
-          selector: "edge",
-          style: {
-            width: 2,
-            "line-color": "#ccc",
-            "target-arrow-color": "#ccc",
-            "target-arrow-shape": "triangle",
-            "curve-style": "bezier",
-          },
-        },
-      ],
+      style: cytoscapeStyles,
       layout: { name: "null" },
     });
 
@@ -157,23 +125,14 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements, onOpenModal }) =
   }, [layoutType]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "10px" }}>
-      <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <label htmlFor="layoutSelect" style={{ fontWeight: 600, color: "#333" }}>
-          View Mode:
-        </label>
+    <div className={styles.graphViewContainer}>
+      <div className={styles.layoutControls}>
+        <label htmlFor="layoutSelect">View Mode:</label>
         <select
           id="layoutSelect"
+          className={styles.layoutSelect}
           value={layoutType}
           onChange={(e) => setLayoutType(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "1px solid #d9d9d9",
-            backgroundColor: "#fff",
-            cursor: "pointer",
-            outline: "none",
-          }}
         >
           <option value="dagre">Dagre Tree</option>
           <option value="grid">Grid</option>
@@ -182,39 +141,9 @@ export const GraphView: React.FC<GraphViewProps> = ({ elements, onOpenModal }) =
         </select>
       </div>
 
-      <div style={{ position: "relative", flexGrow: 1, minHeight: "500px" }}>
-        {isLoading && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255, 255, 255, 0.7)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 10,
-              borderRadius: "8px",
-              fontWeight: "bold",
-              color: "#555",
-            }}
-          >
-            Rendering {layoutType} layout...
-          </div>
-        )}
-
-        <div
-          ref={containerRef}
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "1px solid #e0e0e0",
-            borderRadius: "8px",
-            backgroundColor: "#fafafa",
-          }}
-        />
+      <div className={styles.graphWrapper}>
+        {isLoading && <div className={styles.loadingOverlay}>Rendering {layoutType} layout...</div>}
+        <div ref={containerRef} className={styles.cyContainer} />
       </div>
 
       {isModalOpen && selectedNode && (
