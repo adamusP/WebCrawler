@@ -1,11 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./WebEntries.module.css";
 import { WebsiteRecord, WebsiteRecordDTO, mapWebsiteRecord } from "../../components/types/website";
-import WebEntryModal, { WebEntryFormData } from "./WebEntryModal";
+import { WebEntryFormData } from "./WebEntryModal";
 import { Pencil, Trash2, Globe } from "lucide-react";
-
-const ITEMS_PER_PAGE = 4;
-
 interface WebEntriesListProps {
   selectedWebsiteId: string | null;
   onSelectWebsite: (id: string | null) => void;
@@ -30,15 +27,32 @@ export default function WebEntriesList({
   const [websites, setWebsites] = useState<WebsiteRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filterUrl, setFilterUrl] = useState("");
+  const [filterLabel, setFilterLabel] = useState("");
+  const [filterTags, setFilterTags] = useState("");
   const [sortBy, setSortBy] = useState<"url" | "lastCrawledAt">("url");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [itemsPerPage, setItemsPerPage] = useState<number>(4);
 
   const fetchWebsites = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:3000/api/websites");
+
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        sortBy,
+        sortOrder,
+      });
+
+      if (filterUrl.trim()) params.append("url", filterUrl.trim());
+      if (filterLabel.trim()) params.append("label", filterLabel.trim());
+      if (filterTags.trim()) params.append("tags", filterTags.trim());
+
+      const response = await fetch(`http://localhost:3000/api/websites?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Server Error: ${response.status}`);
@@ -49,6 +63,7 @@ export default function WebEntriesList({
       const mappedData = data.map(mapWebsiteRecord);
 
       setWebsites(mappedData);
+      setHasMore(data.length === itemsPerPage);
       setError(null);
     } catch (err) {
       console.error("Server Error:", err);
@@ -59,8 +74,44 @@ export default function WebEntriesList({
   };
 
   useEffect(() => {
-    fetchWebsites();
-  }, [refreshTrigger]);
+    const timeoutId = setTimeout(() => {
+      fetchWebsites();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    currentPage,
+    filterUrl,
+    filterLabel,
+    filterTags,
+    sortBy,
+    sortOrder,
+    refreshTrigger,
+    itemsPerPage,
+  ]);
+
+  const handleFilterChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value);
+      setCurrentPage(1);
+    };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as "url" | "lastCrawledAt");
+    setCurrentPage(1);
+  };
+
+  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(e.target.value as "asc" | "desc");
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLimit = Number(e.target.value);
+    setItemsPerPage(newLimit);
+    setCurrentPage(1);
+  };
 
   const handleDeleteWebsite = async (id: string, label: string) => {
     if (!window.confirm(`Are you sure you want to delete "${label}"?`)) {
@@ -77,7 +128,7 @@ export default function WebEntriesList({
       fetchWebsites();
     } catch (err) {
       console.error("Failed to delete the record:", err);
-      alert("Failed to save the record. Please check the console for more details.");
+      alert("Failed to delete the record. Please check the console for more details.");
     }
   };
 
@@ -95,48 +146,6 @@ export default function WebEntriesList({
       tagsString: website.tags ? website.tags.join(", ") : "",
     };
     onOpenModal(initialFormData, true, website.id);
-  };
-  const resultItems = useMemo(() => {
-    let items = websites;
-
-    if (searchQuery.trim()) {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      items = items.filter((item) => {
-        const matchesUrl = item.url.toLowerCase().includes(lowerCaseQuery);
-        const matchesLabel = item.label.toLowerCase().includes(lowerCaseQuery);
-        const matchesTags = item.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery));
-        return matchesUrl || matchesLabel || matchesTags;
-      });
-    }
-    return [...items].sort((a, b) => {
-      if (sortBy === "url") {
-        return a.url.localeCompare(b.url);
-      } else {
-        const timeA = a.lastCrawledAt ? a.lastCrawledAt.getTime() : 0;
-        const timeB = b.lastCrawledAt ? b.lastCrawledAt.getTime() : 0;
-
-        return timeB - timeA;
-      }
-    });
-  }, [websites, searchQuery, sortBy]);
-
-  const totalPages = Math.ceil(resultItems.length / ITEMS_PER_PAGE) || 1;
-
-  const safeCurrentPage = currentPage > totalPages ? 1 : currentPage;
-
-  const paginatedItems = useMemo(() => {
-    const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-    return resultItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [resultItems, safeCurrentPage]);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value as "url" | "lastCrawledAt");
-    setCurrentPage(1);
   };
 
   const getStatusClass = (status: WebsiteRecord["lastStatus"]) => {
@@ -176,15 +185,36 @@ export default function WebEntriesList({
       <div className={styles.controls}>
         <input
           type="text"
-          placeholder="Filter by URL, Label, or Tag..."
-          value={searchQuery}
-          onChange={handleSearchChange}
+          placeholder="Filter by Label..."
+          value={filterLabel}
+          onChange={handleFilterChange(setFilterLabel)}
           className={styles.searchInput}
         />
-        <select value={sortBy} onChange={handleSortChange} className={styles.sortSelect}>
-          <option value="url">Sort by URL</option>
-          <option value="lastCrawledAt">Sort by Last Crawled</option>
-        </select>
+        <input
+          type="text"
+          placeholder="Filter by URL..."
+          value={filterUrl}
+          onChange={handleFilterChange(setFilterUrl)}
+          className={styles.searchInput}
+        />
+        <input
+          type="text"
+          placeholder="Filter by Tags..."
+          value={filterTags}
+          onChange={handleFilterChange(setFilterTags)}
+          className={styles.searchInput}
+        />
+
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <select value={sortBy} onChange={handleSortChange} className={styles.sortSelect}>
+            <option value="url">Sort by URL</option>
+            <option value="lastCrawledAt">Sort by Last Crawled</option>
+          </select>
+          <select value={sortOrder} onChange={handleSortOrderChange} className={styles.sortSelect}>
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
       </div>
 
       <div className={styles.list}>
@@ -192,20 +222,14 @@ export default function WebEntriesList({
           <p style={{ textAlign: "center", color: "#64748b" }}>Loading...</p>
         ) : error ? (
           <p style={{ textAlign: "center", color: "#dc2626" }}>{error}</p>
-        ) : paginatedItems.length === 0 ? (
+        ) : websites.length === 0 ? (
           <p style={{ textAlign: "center", color: "#64748b" }}>No records found.</p>
         ) : (
-          paginatedItems.map((item) => (
+          websites.map((item) => (
             <div
               key={item.id}
               className={`${styles.card} ${selectedWebsiteId === item.id ? styles.active : ""}`}
-              onClick={() => {
-                if (selectedWebsiteId === item.id) {
-                  onSelectWebsite(null);
-                } else {
-                  onSelectWebsite(item.id);
-                }
-              }}
+              onClick={() => onSelectWebsite(selectedWebsiteId === item.id ? null : item.id)}
             >
               <input
                 type="checkbox"
@@ -280,19 +304,31 @@ export default function WebEntriesList({
       </div>
 
       <div className={styles.pagination}>
+        <div className={styles.limitSelector}>
+          <label htmlFor="itemsPerPage">Per page:</label>
+          <select
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className={styles.limitSelect}
+          >
+            <option value={5}>4</option>
+            <option value={10}>6</option>
+            <option value={20}>10</option>
+            <option value={50}>15</option>
+          </select>
+        </div>
         <button
           className={styles.pageButton}
-          disabled={safeCurrentPage === 1}
+          disabled={currentPage === 1}
           onClick={() => setCurrentPage((prev) => prev - 1)}
         >
           Previous
         </button>
-        <span className={styles.pageInfo}>
-          Page {safeCurrentPage} of {totalPages}
-        </span>
+        <span className={styles.pageInfo}>Page {currentPage}</span>
         <button
           className={styles.pageButton}
-          disabled={safeCurrentPage === totalPages}
+          disabled={!hasMore || websites.length === 0}
           onClick={() => setCurrentPage((prev) => prev + 1)}
         >
           Next

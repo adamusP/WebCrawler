@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Execution, ExecutionDTO, mapExecution } from "../../components/types/execution";
 import styles from "./Executions.module.css";
 
@@ -7,7 +7,6 @@ interface ExecutionsListProps {
   onClearFilter: () => void;
 }
 
-const ITEMS_PER_PAGE = 8;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsListProps) {
@@ -17,27 +16,45 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
-  const fetchExecutions = async () => {
-    setIsLoading(true);
-    try {
-      const url = websiteId
-        ? `http://localhost:3000/api/websites/${websiteId}/executions`
-        : "http://localhost:3000/api/executions";
+  const fetchExecutions = useCallback(
+    async (page: number) => {
+      setIsLoading(true);
+      try {
+        const baseUrl = websiteId
+          ? `http://localhost:3000/api/websites/${websiteId}/executions`
+          : "http://localhost:3000/api/executions";
 
-      const response = await fetch(url);
-      const data: ExecutionDTO[] = await response.json();
+        const url = new URL(baseUrl);
+        url.searchParams.append("page", page.toString());
+        url.searchParams.append("limit", itemsPerPage.toString());
 
-      setExecutions(data.map(mapExecution));
-    } catch (error) {
-      console.error("Failed to fetch executions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        const response = await fetch(url.toString());
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: ExecutionDTO[] = await response.json();
+        setExecutions(data.map(mapExecution));
+
+        setHasMore(data.length === itemsPerPage);
+      } catch (error) {
+        console.error("Failed to fetch executions:", error);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [websiteId, itemsPerPage]
+  );
 
   useEffect(() => {
-    fetchExecutions();
+    fetchExecutions(currentPage);
+  }, [fetchExecutions, currentPage, itemsPerPage]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [websiteId]);
 
@@ -55,8 +72,11 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
 
       if (response.ok) {
         await delay(800);
-        await fetchExecutions();
-        setCurrentPage(1);
+        if (currentPage === 1) {
+          await fetchExecutions(1);
+        } else {
+          setCurrentPage(1);
+        }
       } else {
         console.error("Server responded with an error when starting execution");
       }
@@ -68,19 +88,17 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
   };
 
   const handleManualRefresh = () => {
-    fetchExecutions();
+    setIsRefreshing(true);
+    fetchExecutions(currentPage);
   };
 
-  const totalPages = Math.ceil(executions.length / ITEMS_PER_PAGE) || 1;
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLimit = Number(e.target.value);
+    setItemsPerPage(newLimit);
+    setCurrentPage(1);
+  };
 
-  const safeCurrentPage = currentPage > totalPages ? 1 : currentPage;
-
-  const paginatedExecutions = useMemo(() => {
-    const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-    return executions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [executions, safeCurrentPage]);
-
-  if (isLoading) return <div>Loading executions...</div>;
+  if (isLoading && executions.length === 0) return <div>Loading executions...</div>;
 
   return (
     <div className={styles.container}>
@@ -109,13 +127,14 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
               </button>
 
               <button type="button" className={styles.backButton} onClick={onClearFilter}>
-                ← Back to All
+                Back to All
               </button>
             </>
           )}
         </div>
       </div>
-      {paginatedExecutions.length === 0 ? (
+
+      {executions.length === 0 ? (
         <p>No records found</p>
       ) : (
         <>
@@ -130,7 +149,7 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
               </tr>
             </thead>
             <tbody>
-              {paginatedExecutions.map((ex) => (
+              {executions.map((ex) => (
                 <tr key={ex.id}>
                   <td>{ex.websiteRecordLabel}</td>
                   <td>
@@ -143,20 +162,33 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
               ))}
             </tbody>
           </table>
+
           <div className={styles.pagination}>
+            <div className={styles.limitSelector}>
+              <label htmlFor="itemsPerPage">Per page:</label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className={styles.limitSelect}
+              >
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+              </select>
+            </div>
             <button
               type="button"
-              disabled={safeCurrentPage === 1}
+              disabled={currentPage === 1 || isLoading}
               onClick={() => setCurrentPage((prev) => prev - 1)}
             >
               Previous
             </button>
-            <span>
-              Page {safeCurrentPage} of {totalPages}
-            </span>
+            <span>Page {currentPage}</span>
             <button
               type="button"
-              disabled={safeCurrentPage === totalPages}
+              disabled={!hasMore || isLoading}
               onClick={() => setCurrentPage((prev) => prev + 1)}
             >
               Next

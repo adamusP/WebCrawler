@@ -21,34 +21,72 @@
   margin-bottom: 1rem;
 }
 
-.controls {
+.addButton {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
   margin-bottom: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.sortSelect {
-  width: 100%;
-  padding: 0.5rem;
-  margin-top: 0.5rem;
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--color-background-light, #f8fafc);
+  padding: 1rem;
+  border-radius: 6px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s ease;
 }
 
 .searchInput {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   box-sizing: border-box;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  background-color: #ffffff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.searchInput:focus {
+.searchInput:focus,
+.sortSelect:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 59, 130, 246), 0.15);
+}
+
+.sortSelect {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  outline: none;
+  background-color: #ffffff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+  }
+  .controls > div {
+    grid-column: span 3;
+    display: flex;
+    gap: 0.75rem;
+  }
 }
 
 .card {
@@ -212,9 +250,25 @@
 
 .pagination {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.limitSelector {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.limitSelect {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  outline: none;
+  cursor: pointer;
 }
 
 .pageButton {
