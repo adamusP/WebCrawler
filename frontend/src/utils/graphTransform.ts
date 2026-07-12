@@ -6,7 +6,7 @@ export type GraphViewMode = "website" | "domain";
 const getDomainName = (url: string): string => {
   try {
     return new URL(url).hostname;
-  } catch (error) {
+  } catch {
     return url;
   }
 };

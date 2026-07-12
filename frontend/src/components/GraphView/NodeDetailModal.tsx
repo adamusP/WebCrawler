@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import styles from "./NodeDetailModal.module.css";
 import { WebEntryFormData } from "../WebEntries/WebEntryModal";
 
