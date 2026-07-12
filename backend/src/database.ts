@@ -418,7 +418,6 @@ export async function createExecutionForWebsiteRecord(
   return { executionId, websiteRecord };
 }
 
-
 export async function skipOlderExecutions(
   websiteRecord: WebsiteRecord,
   executionId: string
