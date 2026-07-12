@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import styles from "./WebEntries.module.css";
 import { WebsiteRecord, WebsiteRecordDTO, mapWebsiteRecord } from "../../components/types/website";
 import WebEntryModal, { WebEntryFormData } from "./WebEntryModal";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Globe } from "lucide-react";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -238,9 +238,12 @@ export default function WebEntriesList({
                   </div>
                 </div>
 
-                <a href={item.url} target="_blank" rel="noreferrer" className={styles.url}>
-                  {item.url}
-                </a>
+                <div className={styles.url}>
+                  <a href={item.url} target="_blank" rel="noreferrer">
+                    <Globe size={16} />
+                  </a>
+                  <span className={styles.urlText}>{item.url}</span>
+                </div>
 
                 {item.tags.length > 0 && (
                   <div className={styles.tags}>
