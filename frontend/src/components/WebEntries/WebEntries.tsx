@@ -199,7 +199,13 @@ export default function WebEntriesList({
             <div
               key={item.id}
               className={`${styles.card} ${selectedWebsiteId === item.id ? styles.active : ""}`}
-              onClick={() => onSelectWebsite(item.id)}
+              onClick={() => {
+                if (selectedWebsiteId === item.id) {
+                  onSelectWebsite(null);
+                } else {
+                  onSelectWebsite(item.id);
+                }
+              }}
             >
               <input
                 type="checkbox"
@@ -221,7 +227,10 @@ export default function WebEntriesList({
                     <button
                       type="button"
                       title="Edit Record"
-                      onClick={() => handleEditClick(item)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(item);
+                      }}
                       className={`${styles.actionButton} ${styles.editButton}`}
                     >
                       <Pencil size={16} />
@@ -230,7 +239,10 @@ export default function WebEntriesList({
                     <button
                       type="button"
                       title="Delete Record"
-                      onClick={() => handleDeleteWebsite(item.id, item.label)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteWebsite(item.id, item.label);
+                      }}
                       className={`${styles.actionButton} ${styles.deleteButton}`}
                     >
                       <Trash2 size={16} />

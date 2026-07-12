@@ -69,6 +69,19 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+.card.active {
+  border-color: #3b82f6;
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.2),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background-color: #f8fafc;
+}
+
+.card:hover:not(.active) {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
 .cardContent {
   flex: 1;
   display: flex;
