@@ -418,6 +418,22 @@ export async function createExecutionForWebsiteRecord(
   return { executionId, websiteRecord };
 }
 
+
+export async function skipOlderExecutions(
+  websiteRecord: WebsiteRecord,
+  executionId: string
+): Promise<void> {
+  await pool.query(
+    `
+      UPDATE "Execution"
+      SET "status" = 'SKIPPED'
+      WHERE "websiteRecordId" = $1
+      AND "status" = 'QUEUED' AND "id" != $2
+    `,
+    [websiteRecord.id, executionId]
+  );
+}
+
 export async function createManualCrawlExecution(
   input: ManualCrawlExecutionInput
 ): Promise<ManualCrawlExecution> {

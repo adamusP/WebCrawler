@@ -16,6 +16,7 @@ import {
   listWebsitesPaginated,
   normalizePeriodicity,
   updateWebsiteRecord,
+  skipOlderExecutions,
 } from "./database.js";
 
 const app = express();
@@ -235,6 +236,8 @@ app.post("/api/websites/:id/executions", async (req, res) => {
   if (!execution) {
     return res.status(404).json({ error: "Website record not found" });
   }
+
+  await skipOlderExecutions(execution.websiteRecord, execution.executionId);
 
   const crawlJobDataInput: CrawlJobDataInput = {
     url: execution.websiteRecord.url,
