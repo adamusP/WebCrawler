@@ -44,7 +44,7 @@ export default function WebEntryModal({ onClose, onSave, initialData }: WebEntry
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h3 className={styles.title}>{initialData ? "Edit Website Record" : "Add New Record"}</h3>

@@ -242,7 +242,9 @@ export default function WebEntriesList({
 
               <div className={styles.cardContent}>
                 <div className={styles.cardHeader}>
-                  <h4 className={styles.label}>{item.label}</h4>
+                  <h4 className={styles.label} title={item.label}>
+                    {item.label}
+                  </h4>
                   <div className={styles.cardHeaderRight}>
                     <span className={`${styles.statusBadge} ${getStatusClass(item.lastStatus)}`}>
                       {item.lastStatus || "UNTESTED"}
@@ -278,13 +280,15 @@ export default function WebEntriesList({
                   <a href={item.url} target="_blank" rel="noreferrer">
                     <Globe size={16} />
                   </a>
-                  <span className={styles.urlText}>{item.url}</span>
+                  <span className={styles.urlText} title={item.url}>
+                    {item.url}
+                  </span>
                 </div>
 
                 {item.tags.length > 0 && (
                   <div className={styles.tags}>
                     {item.tags.map((tag, idx) => (
-                      <span key={idx} className={styles.tag}>
+                      <span key={idx} className={styles.tag} title={tag}>
                         #{tag}
                       </span>
                     ))}
@@ -292,7 +296,9 @@ export default function WebEntriesList({
                 )}
 
                 <div className={styles.cardFooter}>
-                  <span>Period: {item.periodicity}</span>
+                  <span className={!item.active ? styles.inactiveText : ""}>
+                    {item.active ? `Period: ${item.periodicity}` : "Inactive"}
+                  </span>
                   <span>
                     {item.lastCrawledAt ? item.lastCrawledAt.toLocaleString() : "Never crawled"}
                   </span>

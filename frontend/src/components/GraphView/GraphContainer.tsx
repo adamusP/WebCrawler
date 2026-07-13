@@ -55,12 +55,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ padding: "15px", borderBottom: "1px solid #eee" }}>
-        <h4>GraphQL Graph Data Status</h4>
-        <p>
-          Received <strong>{data?.nodes?.length || 0}</strong> main pages.
-        </p>
-
+      <div className={styles.controlsHeader}>
         <div className={styles.viewModeContainer}>
           <button
             type="button"
@@ -77,6 +72,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
             Domain View
           </button>
         </div>
+
         <div className={styles.viewModeContainer}>
           <button
             type="button"

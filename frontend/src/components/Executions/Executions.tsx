@@ -138,32 +138,36 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
         <p>No records found</p>
       ) : (
         <>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Label</th>
-                <th>Status</th>
-                <th>Started</th>
-                <th>Ended</th>
-                <th>Pages</th>
-              </tr>
-            </thead>
-            <tbody>
-              {executions.map((ex) => (
-                <tr key={ex.id}>
-                  <td>{ex.websiteRecordLabel}</td>
-                  <td>
-                    <span className={`${styles.status} ${styles[ex.status.toLowerCase()]}`}>
-                      {ex.status}
-                    </span>
-                  </td>
-                  <td>{ex.startedAt ? ex.startedAt.toLocaleString() : "Not started yet"}</td>
-                  <td>{ex.endedAt ? ex.endedAt.toLocaleString() : "Did not end yet"}</td>
-                  <td>{ex.pagesCrawled}</td>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Label</th>
+                  <th>Status</th>
+                  <th>Started</th>
+                  <th>Ended</th>
+                  <th>Pages</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {executions.map((ex) => (
+                  <tr key={ex.id}>
+                    <td className={styles.label} title={ex.websiteRecordLabel}>
+                      {ex.websiteRecordLabel}
+                    </td>
+                    <td>
+                      <span className={`${styles.status} ${styles[ex.status.toLowerCase()]}`}>
+                        {ex.status}
+                      </span>
+                    </td>
+                    <td>{ex.startedAt ? ex.startedAt.toLocaleString() : "Not started yet"}</td>
+                    <td>{ex.endedAt ? ex.endedAt.toLocaleString() : "Did not end yet"}</td>
+                    <td>{ex.pagesCrawled}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className={styles.pagination}>
             <div className={styles.limitSelector}>

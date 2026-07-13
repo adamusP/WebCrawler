@@ -1,3 +1,11 @@
+.controlsHeader {
+  display: flex;
+  gap: 16px;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
 .viewModeContainer {
   display: flex;
   gap: 4px;
@@ -5,7 +13,6 @@
   padding: 4px;
   border-radius: 8px;
   width: fit-content;
-  margin-bottom: 16px;
 }
 
 .modeButton {
