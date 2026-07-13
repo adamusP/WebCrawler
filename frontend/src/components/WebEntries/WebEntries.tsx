@@ -37,29 +37,18 @@ export default function WebEntriesList({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [itemsPerPage, setItemsPerPage] = useState<number>(4);
 
-  const fetchWebsites = async () => {
+  const fetchWebsites = async (isBackground = false) => {
     try {
-      setIsLoading(true);
-
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
-        sortBy,
-        sortOrder,
-      });
-
-      if (filterUrl.trim()) params.append("url", filterUrl.trim());
-      if (filterLabel.trim()) params.append("label", filterLabel.trim());
-      if (filterTags.trim()) params.append("tags", filterTags.trim());
-
-      const response = await fetch(`http://localhost:3000/api/websites?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error(`Server Error: ${response.status}`);
+      if (!isBackground) {
+        setIsLoading(true);
       }
 
-      const data: WebsiteRecordDTO[] = await response.json();
+      const params = new URLSearchParams({});
+      const response = await fetch(`http://localhost:3000/api/websites?${params.toString()}`);
 
+      if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+
+      const data: WebsiteRecordDTO[] = await response.json();
       const mappedData = data.map(mapWebsiteRecord);
 
       setWebsites(mappedData);
@@ -67,18 +56,20 @@ export default function WebEntriesList({
       setError(null);
     } catch (err) {
       console.error("Server Error:", err);
-      setError("Failed to fetch data from the server. Please try again later.");
+      if (!isBackground) setError("Failed to fetch data.");
     } finally {
-      setIsLoading(false);
+      if (!isBackground) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchWebsites();
-    }, 300);
+    const intervalId = setInterval(() => {
+      fetchWebsites(true);
+    }, 5000);
 
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(intervalId);
   }, [
     currentPage,
     filterUrl,
