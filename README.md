@@ -51,7 +51,8 @@ Useful development URLs:
 - Backend health: `http://localhost:3000/health`
 - Swagger docs: `http://localhost:3000/docs`
 - Crawler health: `http://localhost:3001/health`
-- GraphQL: `http://localhost:4000`
+- GraphQL: `http://localhost:4000/graphql`
+- GraphQL health: `http://localhost:4000/health`
 
 ## Current API
 
