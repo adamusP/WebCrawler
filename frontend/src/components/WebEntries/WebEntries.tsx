@@ -182,7 +182,7 @@ export default function WebEntriesList({
           handleCreateClick();
         }}
       >
-        <span>+ Add New Record</span>
+        <span>+ Add New Entry</span>
       </button>
 
       <div className={styles.controls}>
