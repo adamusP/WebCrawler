@@ -25,7 +25,7 @@ export default function WebEntriesList({
   refreshTrigger,
 }: WebEntriesListProps) {
   const [websites, setWebsites] = useState<WebsiteRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
@@ -43,7 +43,17 @@ export default function WebEntriesList({
         setIsLoading(true);
       }
 
-      const params = new URLSearchParams({});
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        sortBy,
+        sortOrder,
+      });
+
+      if (filterUrl.trim()) params.append("url", filterUrl.trim());
+      if (filterLabel.trim()) params.append("label", filterLabel.trim());
+      if (filterTags.trim()) params.append("tags", filterTags.trim());
+
       const response = await fetch(`http://localhost:3000/api/websites?${params.toString()}`);
 
       if (!response.ok) throw new Error(`Server Error: ${response.status}`);
@@ -65,11 +75,13 @@ export default function WebEntriesList({
   };
 
   useEffect(() => {
+    fetchWebsites();
+
     const intervalId = setInterval(() => {
       fetchWebsites(true);
     }, 5000);
 
-    return () => clearTimeout(intervalId);
+    return () => clearInterval(intervalId);
   }, [
     currentPage,
     filterUrl,
