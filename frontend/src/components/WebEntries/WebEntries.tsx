@@ -321,10 +321,10 @@ export default function WebEntriesList({
             onChange={handleItemsPerPageChange}
             className={styles.limitSelect}
           >
-            <option value={5}>4</option>
-            <option value={10}>6</option>
-            <option value={20}>10</option>
-            <option value={50}>15</option>
+            <option value={4}>4</option>
+            <option value={6}>6</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
           </select>
         </div>
         <button
