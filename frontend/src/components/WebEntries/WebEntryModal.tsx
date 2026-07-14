@@ -86,7 +86,7 @@ export default function WebEntryModal({
                 required: "URL is required",
                 pattern: {
                   value:
-                    /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/,
+                    /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_.+~#?&//=]*)$/,
                   message: "Must be a valid URL (e.g., example.com or https://example.com)",
                 },
               })}
