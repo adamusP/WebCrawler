@@ -60,7 +60,7 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({
   const handleCreateAndExecuteClick = () => {
     const prefilledData: Partial<WebEntryFormData> = {
       url: nodeData.id,
-      label: `Record for ${nodeData.id}`,
+      label: `Entry for ${nodeData.id}`,
     };
 
     onClose();
@@ -128,7 +128,7 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({
               This node has not been crawled due to Boundary RegExp limitations.
             </p>
             <button className={styles.actionButton} onClick={handleCreateAndExecuteClick}>
-              Create new Website Record And Execute
+              Create new Website Entry And Execute
             </button>
           </div>
         )}
