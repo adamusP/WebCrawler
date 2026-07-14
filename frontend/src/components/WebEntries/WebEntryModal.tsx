@@ -40,7 +40,16 @@ export default function WebEntryModal({ onClose, onSave, initialData }: WebEntry
   }, [initialData, reset]);
 
   const onSubmit = (data: WebEntryFormData) => {
-    onSave(data);
+    let finalUrl = data.url.trim();
+    if (!/^https?:\/\//i.test(finalUrl)) {
+      finalUrl = `https://${finalUrl}`;
+    }
+
+    const normalizedData = {
+      ...data,
+      url: finalUrl,
+    };
+    onSave(normalizedData);
   };
 
   return (
@@ -69,7 +78,11 @@ export default function WebEntryModal({ onClose, onSave, initialData }: WebEntry
             <input
               {...register("url", {
                 required: "URL is required",
-                pattern: { value: /^https?:\/\/.+/, message: "Must be a valid HTTP/HTTPS URL" },
+                pattern: {
+                  value:
+                    /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/,
+                  message: "Must be a valid URL (e.g., example.com or https://example.com)",
+                },
               })}
               className={styles.input}
               placeholder="https://example.com"

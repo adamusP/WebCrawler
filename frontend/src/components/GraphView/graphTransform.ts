@@ -67,6 +67,7 @@ export const transformGraphqlToCytoscape = (
           data: {
             id: domain,
             label: domain,
+            owner: node.owner,
             isBoundary: isBoundaryNode,
           },
         });

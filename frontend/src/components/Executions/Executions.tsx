@@ -42,6 +42,7 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
         setHasMore(data.length === itemsPerPage);
       } catch (error) {
         console.error("Failed to fetch executions:", error);
+        onClearFilter();
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);

@@ -60,7 +60,7 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({
   const handleCreateAndExecuteClick = () => {
     const prefilledData: Partial<WebEntryFormData> = {
       url: nodeData.id,
-      label: `Seed for ${new URL(nodeData.id).hostname}`,
+      label: `Record for ${nodeData.id}`,
     };
 
     onClose();
