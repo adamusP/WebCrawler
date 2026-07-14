@@ -1,5 +1,5 @@
 import { gql, TypedDocumentNode } from "@apollo/client";
-import { NodeGraphql } from "./graphql";
+import { NodeGraphql } from "./graphTypes";
 
 interface GetGraphNodesData {
   nodes: NodeGraphql[];

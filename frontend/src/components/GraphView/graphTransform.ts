@@ -1,5 +1,5 @@
 import cytoscape from "cytoscape";
-import { NodeGraphql } from "../graphql/graphql";
+import { NodeGraphql } from "../../graphql/graphTypes";
 
 export type GraphViewMode = "website" | "domain";
 

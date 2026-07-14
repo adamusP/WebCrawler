@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@apollo/client/react";
 import { GET_GRAPH_NODES } from "../../graphql/queries";
 import { GraphView } from "./Graphview";
-import { transformGraphqlToCytoscape, GraphViewMode } from "../../utils/graphTransform";
+import { transformGraphqlToCytoscape, GraphViewMode } from "./graphTransform";
 import styles from "./GraphContainer.module.css";
 import { WebEntryFormData } from "../WebEntries/WebEntryModal";
 
