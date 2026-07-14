@@ -163,6 +163,7 @@ export default function App() {
             onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
             onSave={handleSaveWebsite}
             initialData={modalConfig.initialData}
+            isEdit={modalConfig.isEdit}
           />
         )}
       </main>

@@ -15,9 +15,15 @@ interface WebEntryModalProps {
   onClose: () => void;
   onSave: (data: WebEntryFormData) => void;
   initialData: Partial<WebEntryFormData> | null;
+  isEdit: boolean;
 }
 
-export default function WebEntryModal({ onClose, onSave, initialData }: WebEntryModalProps) {
+export default function WebEntryModal({
+  onClose,
+  onSave,
+  initialData,
+  isEdit,
+}: WebEntryModalProps) {
   const {
     register,
     handleSubmit,
@@ -56,7 +62,7 @@ export default function WebEntryModal({ onClose, onSave, initialData }: WebEntry
     <div className={styles.overlay}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <h3 className={styles.title}>{initialData ? "Edit Website Record" : "Add New Record"}</h3>
+          <h3 className={styles.title}>{isEdit ? "Edit Website Entry" : "Add New Entry"}</h3>
           <button type="button" className={styles.closeButton} onClick={onClose}>
             &times;
           </button>
@@ -131,7 +137,7 @@ export default function WebEntryModal({ onClose, onSave, initialData }: WebEntry
               Cancel
             </button>
             <button type="submit" className={styles.saveButton}>
-              {initialData ? "Save Changes" : "Create Record"}
+              {isEdit ? "Save Changes" : "Create Record"}
             </button>
           </div>
         </form>

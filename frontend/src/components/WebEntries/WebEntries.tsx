@@ -188,21 +188,21 @@ export default function WebEntriesList({
       <div className={styles.controls}>
         <input
           type="text"
-          placeholder="Filter by Label..."
+          placeholder="Label Filter..."
           value={filterLabel}
           onChange={handleFilterChange(setFilterLabel)}
           className={styles.searchInput}
         />
         <input
           type="text"
-          placeholder="Filter by URL..."
+          placeholder="URL Filter..."
           value={filterUrl}
           onChange={handleFilterChange(setFilterUrl)}
           className={styles.searchInput}
         />
         <input
           type="text"
-          placeholder="Filter by Tags..."
+          placeholder="Tags Filter..."
           value={filterTags}
           onChange={handleFilterChange(setFilterTags)}
           className={styles.searchInput}
