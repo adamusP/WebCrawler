@@ -137,7 +137,7 @@ export default function WebEntryModal({
               Cancel
             </button>
             <button type="submit" className={styles.saveButton}>
-              {isEdit ? "Save Changes" : "Create Record"}
+              {isEdit ? "Save Changes" : "Create Entry"}
             </button>
           </div>
         </form>
