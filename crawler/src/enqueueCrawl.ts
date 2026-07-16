@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
 import { CrawlJobData, CrawlJobDataInput } from "./crawlJobData.js";
-import { scheduleCrawlUrl } from "./database.js";
+import { RecoverableCrawlJob, scheduleCrawlUrl } from "./database.js";
 
 const crawlQueue = new Queue("crawl", {
   connection: { host: "redis", port: 6379 },
@@ -84,6 +84,28 @@ export async function scheduleNext(crawlJobData: CrawlJobData): Promise<boolean>
   });
 
   return true;
+}
+
+export async function enqueueRecoveredUrlForCrawling(
+  recoveredJob: RecoverableCrawlJob
+): Promise<void> {
+  const normalizedUrl = new URL(recoveredJob.url).toString();
+  const normalizedWebsiteUrl = new URL(recoveredJob.websiteUrl).toString();
+  const isWebsiteStartUrl = normalizedUrl === normalizedWebsiteUrl;
+
+  const crawlJobData: CrawlJobData = {
+    url: normalizedUrl,
+    regex: recoveredJob.regex,
+    websiteRecordId: recoveredJob.websiteRecordId,
+    executionId: recoveredJob.executionId,
+    nextDelay: isWebsiteStartUrl ? periodicityToMs(recoveredJob.periodicity) : -1,
+  };
+
+  await crawlQueue.add("crawl-url", crawlJobData, {
+    jobId: `${crawlJobData.websiteRecordId}-${crawlJobData.executionId}-${encodeBase64Url(crawlJobData.url)}`,
+    removeOnComplete: true,
+    removeOnFail: true,
+  });
 }
 
 export async function closeCrawlQueue(): Promise<void> {
