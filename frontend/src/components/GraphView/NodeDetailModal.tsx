@@ -35,15 +35,12 @@ export const NodeDetailModal: React.FC<NodeDetailModalProps> = ({
   const handleStartExecution = async (websiteRecordId: string) => {
     setTriggeringId(websiteRecordId);
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/websites/${websiteRecordId}/executions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`/api/websites/${websiteRecordId}/executions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         console.error(`Server responded with error status: ${response.status}`);

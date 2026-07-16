@@ -46,7 +46,7 @@ export default function App() {
 
   const triggerCrawlerExecution = async (websiteId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/websites/${websiteId}/executions`, {
+      const response = await fetch(`/api/websites/${websiteId}/executions`, {
         method: "POST",
       });
       if (!response.ok) {
@@ -74,9 +74,7 @@ export default function App() {
       };
 
       const isEdit = modalConfig.isEdit;
-      const url = isEdit
-        ? `http://localhost:3000/api/websites/${modalConfig.websiteId}`
-        : "http://localhost:3000/api/websites";
+      const url = isEdit ? `/api/websites/${modalConfig.websiteId}` : "/api/websites";
 
       const response = await fetch(url, {
         method: isEdit ? "PATCH" : "POST",

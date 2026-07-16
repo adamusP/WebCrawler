@@ -54,7 +54,7 @@ export default function WebEntriesList({
       if (filterLabel.trim()) params.append("label", filterLabel.trim());
       if (filterTags.trim()) params.append("tags", filterTags.trim());
 
-      const response = await fetch(`http://localhost:3000/api/websites?${params.toString()}`);
+      const response = await fetch(`/api/websites?${params.toString()}`);
 
       if (!response.ok) throw new Error(`Server Error: ${response.status}`);
 
@@ -122,7 +122,7 @@ export default function WebEntriesList({
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/websites/${id}`, {
+      const response = await fetch(`/api/websites/${id}`, {
         method: "DELETE",
       });
 

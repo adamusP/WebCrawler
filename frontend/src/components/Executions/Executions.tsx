@@ -23,11 +23,9 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
     async (page: number) => {
       setIsLoading(true);
       try {
-        const baseUrl = websiteId
-          ? `http://localhost:3000/api/websites/${websiteId}/executions`
-          : "http://localhost:3000/api/executions";
+        const baseUrl = websiteId ? `/api/websites/${websiteId}/executions` : "/api/executions";
 
-        const url = new URL(baseUrl);
+        const url = new URL(baseUrl, window.location.origin);
         url.searchParams.append("page", page.toString());
         url.searchParams.append("limit", itemsPerPage.toString());
 
@@ -64,7 +62,7 @@ export default function ExecutionsList({ websiteId, onClearFilter }: ExecutionsL
 
     setIsTriggering(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/websites/${websiteId}/executions`, {
+      const response = await fetch(`/api/websites/${websiteId}/executions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

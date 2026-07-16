@@ -5,5 +5,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    proxy: {
+      "/api": {
+        target: "http://backend:3000",
+        changeOrigin: true,
+      },
+      "/graphql": {
+        target: "http://graphql:4000",
+        changeOrigin: true,
+      },
+    },
   },
 });
