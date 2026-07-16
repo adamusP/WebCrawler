@@ -35,6 +35,52 @@ export type FinishCrawlUrlInput = {
   error?: string;
 };
 
+export type RecoverableCrawlJob = {
+  executionId: string;
+  websiteRecordId: string;
+  url: string;
+  regex: string;
+  websiteUrl: string;
+  periodicity: Periodicity;
+};
+
+export async function listRecoverableCrawlJobs(): Promise<RecoverableCrawlJob[]> {
+  await retryDeadlocks(() =>
+    pool
+      .query(
+        `
+          UPDATE "CrawlUrl"
+          SET
+            "status" = 'QUEUED',
+            "finishedAt" = NULL,
+            "error" = NULL
+          WHERE "status" = 'RUNNING'
+        `
+      )
+      .then(() => undefined)
+  );
+
+  const result = await pool.query<RecoverableCrawlJob>(
+    `
+      SELECT
+        cu."executionId",
+        cu."websiteRecordId",
+        cu."url",
+        wr."boundaryRegexp" AS "regex",
+        wr."url" AS "websiteUrl",
+        wr."periodicity"
+      FROM "CrawlUrl" cu
+      JOIN "Execution" e ON e."id" = cu."executionId"
+      JOIN "WebsiteRecord" wr ON wr."id" = cu."websiteRecordId"
+      WHERE cu."status" = 'QUEUED'
+        AND e."status" IN ('QUEUED', 'RUNNING')
+      ORDER BY cu."createdAt" ASC
+    `
+  );
+
+  return result.rows;
+}
+
 export async function scheduleCrawlUrl(input: ScheduleCrawlUrlInput): Promise<boolean> {
   try {
     const result = await retryDeadlocksWithResult(() =>

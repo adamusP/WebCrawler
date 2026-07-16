@@ -1,6 +1,7 @@
 import express from "express";
 import { startCrawlerWorkers } from "./crawler.start.js";
-import { closeDatabase } from "./database.js";
+import { closeDatabase, listRecoverableCrawlJobs } from "./database.js";
+import { enqueueRecoveredUrlForCrawling } from "./enqueueCrawl.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -10,6 +11,12 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "crawler" });
 });
+
+const recoverableJobs = await listRecoverableCrawlJobs();
+if (recoverableJobs.length > 0) {
+  await Promise.all(recoverableJobs.map(enqueueRecoveredUrlForCrawling));
+  console.log(`Recovered ${recoverableJobs.length} crawl jobs from PostgreSQL`);
+}
 
 const workers = startCrawlerWorkers();
 
